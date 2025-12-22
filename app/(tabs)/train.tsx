@@ -1,10 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, AppState, Button, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { SessionStatus } from '@/data/models';
 import type { Session, SessionBlock, SessionExercise, SessionSet, WorkoutPlan } from '@/data/models';
 import { startSession } from '@/data/session';
-import { loadActiveSession, loadWorkoutPlans, saveSession } from '@/data/storage';
+import {
+  clearRestState,
+  loadActiveSession,
+  loadRestState,
+  loadWorkoutPlans,
+  saveRestState,
+  saveSession,
+} from '@/data/storage';
 
 type SessionPosition = {
   blockIndex: number;
@@ -79,17 +86,24 @@ export default function TrainScreen() {
   const [actualTimeInput, setActualTimeInput] = useState('');
   const [isResting, setIsResting] = useState(false);
   const [restSecondsRemaining, setRestSecondsRemaining] = useState(0);
+  const [restEndsAt, setRestEndsAt] = useState<string | null>(null);
   const restIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const appStateRef = useRef(AppState.currentState);
 
   useEffect(() => {
     const loadData = async () => {
       const storedPlans = await loadWorkoutPlans();
       const storedActiveSession = await loadActiveSession();
+      const storedRestState = await loadRestState();
       setPlans(storedPlans);
       setActiveSession(storedActiveSession);
 
       // eslint-disable-next-line no-console
       console.log('active session check', storedActiveSession);
+
+      if (storedActiveSession && storedRestState?.sessionId === storedActiveSession.id) {
+        resumeRestTimer(storedRestState.endsAt);
+      }
     };
 
     void loadData();
@@ -170,42 +184,86 @@ export default function TrainScreen() {
     console.log('session started', session);
   };
 
-  const stopRestTimer = () => {
+  const stopRestTimer = async () => {
     if (restIntervalRef.current) {
       clearInterval(restIntervalRef.current);
       restIntervalRef.current = null;
     }
     setIsResting(false);
     setRestSecondsRemaining(0);
+    setRestEndsAt(null);
+    await clearRestState();
   };
 
-  const startRestTimer = (seconds: number) => {
+  const updateRestRemaining = (endsAt: string) => {
+    const remaining = Math.max(0, Math.ceil((Date.parse(endsAt) - Date.now()) / 1000));
+    setRestSecondsRemaining(remaining);
+    return remaining;
+  };
+
+  const startRestTimer = async (seconds: number, sessionId: string) => {
     if (!seconds || seconds <= 0) {
       return;
     }
 
-    stopRestTimer();
+    await stopRestTimer();
+    const endsAt = new Date(Date.now() + seconds * 1000).toISOString();
     setIsResting(true);
-    setRestSecondsRemaining(seconds);
+    setRestEndsAt(endsAt);
+    updateRestRemaining(endsAt);
+    await saveRestState({ sessionId, endsAt });
 
     restIntervalRef.current = setInterval(() => {
-      setRestSecondsRemaining((previous) => {
-        if (previous <= 1) {
-          stopRestTimer();
-          return 0;
-        }
-        return previous - 1;
-      });
+      const remaining = updateRestRemaining(endsAt);
+      if (remaining <= 0) {
+        void stopRestTimer();
+      }
+    }, 1000);
+  };
+
+  const resumeRestTimer = (endsAt: string) => {
+    if (!endsAt) {
+      return;
+    }
+
+    if (restIntervalRef.current) {
+      clearInterval(restIntervalRef.current);
+      restIntervalRef.current = null;
+    }
+
+    setIsResting(true);
+    setRestEndsAt(endsAt);
+    const remaining = updateRestRemaining(endsAt);
+    if (remaining <= 0) {
+      void stopRestTimer();
+      return;
+    }
+
+    restIntervalRef.current = setInterval(() => {
+      const nextRemaining = updateRestRemaining(endsAt);
+      if (nextRemaining <= 0) {
+        void stopRestTimer();
+      }
     }, 1000);
   };
 
   useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      const previous = appStateRef.current;
+      appStateRef.current = nextState;
+
+      if (previous.match(/inactive|background/) && nextState === 'active' && restEndsAt) {
+        resumeRestTimer(restEndsAt);
+      }
+    });
+
     return () => {
+      subscription.remove();
       if (restIntervalRef.current) {
         clearInterval(restIntervalRef.current);
       }
     };
-  }, []);
+  }, [restEndsAt]);
 
   const handleSetAction = async (markCompleted: boolean) => {
     if (!activeSession || !activePosition || isResting) {
@@ -237,8 +295,50 @@ export default function TrainScreen() {
 
     if (nextSession.status === SessionStatus.Active) {
       const restSeconds = currentExerciseInfo?.restSeconds ?? 0;
-      startRestTimer(restSeconds);
+      await startRestTimer(restSeconds, nextSession.id);
     }
+  };
+
+  const handleEndSession = () => {
+    if (!activeSession) {
+      return;
+    }
+
+    Alert.alert('End Session', 'Do you want to complete or abandon this session?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Abandon',
+        style: 'destructive',
+        onPress: async () => {
+          const endedAt = new Date().toISOString();
+          const nextSession: Session = {
+            ...activeSession,
+            status: SessionStatus.Abandoned,
+            endedAt,
+          };
+          await saveSession(nextSession);
+          await stopRestTimer();
+          setActiveSession(null);
+        },
+      },
+      {
+        text: 'Complete',
+        onPress: async () => {
+          const endedAt = new Date().toISOString();
+          const nextSession: Session = {
+            ...activeSession,
+            status: SessionStatus.Completed,
+            endedAt,
+          };
+          await saveSession(nextSession);
+          await stopRestTimer();
+          setActiveSession(null);
+        },
+      },
+    ]);
   };
 
   return (
@@ -252,7 +352,7 @@ export default function TrainScreen() {
               {isResting ? (
                 <View style={styles.restContainer}>
                   <Text style={styles.statusText}>Rest: {restSecondsRemaining}s</Text>
-                  <Button title="Skip Rest" onPress={stopRestTimer} />
+                  <Button title="Skip Rest" onPress={() => void stopRestTimer()} />
                 </View>
               ) : (
                 <>
@@ -279,6 +379,9 @@ export default function TrainScreen() {
                   </View>
                 </>
               )}
+              <View style={styles.endSessionRow}>
+                <Button title="End Session" onPress={handleEndSession} />
+              </View>
             </>
           ) : (
             <Text style={styles.statusText}>Unable to load active session details.</Text>
@@ -363,5 +466,8 @@ const styles = StyleSheet.create({
   restContainer: {
     alignItems: 'center',
     gap: 12,
+  },
+  endSessionRow: {
+    marginTop: 12,
   },
 });
