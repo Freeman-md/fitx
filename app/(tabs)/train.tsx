@@ -3,8 +3,15 @@ import { Alert, AppState, Button, StyleSheet, Text, TextInput, View } from 'reac
 import { useRouter } from 'expo-router';
 
 import { SessionStatus } from '@/data/models';
-import type { Session, SessionBlock, SessionExercise, SessionSet, WorkoutPlan } from '@/data/models';
+import type { Session, WorkoutPlan } from '@/data/models';
 import { startSession } from '@/data/session';
+import {
+  findNextIncompleteSet,
+  getSessionBlock,
+  getSessionExercise,
+  isSessionComplete,
+  updateSessionSet,
+} from '@/data/session-runner';
 import {
   clearRestState,
   loadActiveSession,
@@ -14,71 +21,6 @@ import {
   saveRestState,
   saveSession,
 } from '@/data/storage';
-
-type SessionPosition = {
-  blockIndex: number;
-  exerciseIndex: number;
-  setIndex: number;
-};
-
-function isSetResolved(set: SessionSet): boolean {
-  return set.completed || Boolean(set.completedAt);
-}
-
-function findNextIncompleteSet(session: Session): SessionPosition | null {
-  for (let blockIndex = 0; blockIndex < session.blocks.length; blockIndex += 1) {
-    const block = session.blocks[blockIndex];
-    for (let exerciseIndex = 0; exerciseIndex < block.exercises.length; exerciseIndex += 1) {
-      const exercise = block.exercises[exerciseIndex];
-      for (let setIndex = 0; setIndex < exercise.sets.length; setIndex += 1) {
-        const set = exercise.sets[setIndex];
-        if (!isSetResolved(set)) {
-          return { blockIndex, exerciseIndex, setIndex };
-        }
-      }
-    }
-  }
-  return null;
-}
-
-function isSessionComplete(session: Session): boolean {
-  return findNextIncompleteSet(session) === null;
-}
-
-function updateSessionSet(
-  session: Session,
-  position: SessionPosition,
-  updater: (set: SessionSet) => SessionSet
-): Session {
-  const blocks = session.blocks.map((block, blockIndex) => {
-    if (blockIndex !== position.blockIndex) {
-      return block;
-    }
-    const exercises = block.exercises.map((exercise, exerciseIndex) => {
-      if (exerciseIndex !== position.exerciseIndex) {
-        return exercise;
-      }
-      const sets = exercise.sets.map((set, setIndex) => {
-        if (setIndex !== position.setIndex) {
-          return set;
-        }
-        return updater(set);
-      });
-      return { ...exercise, sets };
-    });
-    return { ...block, exercises };
-  });
-
-  return { ...session, blocks };
-}
-
-function getSessionBlock(session: Session, position: SessionPosition): SessionBlock {
-  return session.blocks[position.blockIndex];
-}
-
-function getSessionExercise(session: Session, position: SessionPosition): SessionExercise {
-  return getSessionBlock(session, position).exercises[position.exerciseIndex];
-}
 
 export default function TrainScreen() {
   const router = useRouter();
