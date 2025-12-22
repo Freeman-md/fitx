@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Session, WorkoutDay, WorkoutPlan } from '@/data/models';
 import { RowText, SectionTitle } from '@/components/ui/text';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { loadLastCompletedSessionId, loadSessions, loadWorkoutPlans } from '@/data/storage';
 
 type SummaryData = {
@@ -48,6 +50,7 @@ function buildSummaryData(
 }
 
 export default function SessionSummaryScreen() {
+  const colorScheme = useColorScheme();
   const [summary, setSummary] = useState<SummaryData | null>(null);
 
   useEffect(() => {
@@ -81,7 +84,11 @@ export default function SessionSummaryScreen() {
   }, [summary]);
 
   return (
-    <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
+        <Text style={[styles.pageTitle, colorScheme === 'dark' ? styles.pageTitleDark : null]}>
+          Session Summary
+        </Text>
       {summary ? (
         <View style={styles.section}>
           <RowText>Plan: {summary.plan?.name ?? 'Unknown'}</RowText>
@@ -96,15 +103,27 @@ export default function SessionSummaryScreen() {
       ) : (
         <RowText>No completed session found.</RowText>
       )}
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    justifyContent: 'center',
     gap: 16,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  pageTitle: {
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
+    opacity: 0.7,
+  },
+  pageTitleDark: {
+    color: '#ECEDEE',
   },
   section: {
     gap: 8,

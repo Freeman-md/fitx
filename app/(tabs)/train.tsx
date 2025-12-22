@@ -1,11 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
 import { SessionStatus } from '@/data/models';
 import { RowText, SectionTitle, StatusText } from '@/components/ui/text';
-import { useTrainSession } from '@/hooks/use-train-session';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTrainSession } from '@/hooks/use-train-session';
 
 export default function TrainScreen() {
   const router = useRouter();
@@ -135,10 +136,14 @@ export default function TrainScreen() {
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      keyboardShouldPersistTaps="handled"
-      alwaysBounceVertical={false}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+        alwaysBounceVertical={false}>
+      <Text style={[styles.pageTitle, colorScheme === 'dark' ? styles.pageTitleDark : null]}>
+        Train
+      </Text>
       {activeSession && activeSession.status === SessionStatus.Active ? (
         <View style={styles.section}>
           <SectionTitle>Active Session</SectionTitle>
@@ -232,12 +237,17 @@ export default function TrainScreen() {
           ) : null}
         </>
       )}
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
   container: {
+    flexGrow: 1,
     justifyContent: 'center',
     padding: 16,
     gap: 16,
@@ -271,6 +281,15 @@ const styles = StyleSheet.create({
   },
   endSessionRow: {
     marginTop: 12,
+  },
+  pageTitle: {
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
+    opacity: 0.7,
+  },
+  pageTitleDark: {
+    color: '#ECEDEE',
   },
   buttonBase: {
     minHeight: 48,

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SessionStatus } from '@/data/models';
 import type { Session, WorkoutDay, WorkoutPlan } from '@/data/models';
@@ -106,7 +107,11 @@ export default function HistoryScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
+        <Text style={[styles.pageTitle, colorScheme === 'dark' ? styles.pageTitleDark : null]}>
+          History
+        </Text>
       {completedSessions.length === 0 ? (
         <StatusText>No completed sessions yet.</StatusText>
       ) : (
@@ -148,7 +153,8 @@ export default function HistoryScreen() {
           ))}
         </View>
       ) : null}
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -156,6 +162,18 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     gap: 16,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  pageTitle: {
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
+    opacity: 0.7,
+  },
+  pageTitleDark: {
+    color: '#ECEDEE',
   },
   section: {
     gap: 8,
