@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import type { Session, WorkoutPlan } from '@/data/models';
+import type { Session, SessionStatus as SessionStatusType, WorkoutPlan } from '@/data/models';
 import { SessionStatus } from '@/data/models';
 import { getCurrentExerciseInfo, type CurrentExerciseInfo } from '@/data/session-info';
 import { startSession } from '@/data/session';
@@ -142,7 +142,7 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
     await handleSetAction(false);
   };
 
-  const endSession = async (status: SessionStatus.Completed | SessionStatus.Abandoned) => {
+  const endSession = async (status: SessionStatusType) => {
     if (!activeSession) {
       return;
     }
