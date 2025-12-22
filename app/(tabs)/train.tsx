@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { SessionStatus } from '@/data/models';
 import type { Session, SessionBlock, SessionExercise, SessionSet, WorkoutPlan } from '@/data/models';
@@ -12,6 +12,10 @@ type SessionPosition = {
   setIndex: number;
 };
 
+function isSetResolved(set: SessionSet): boolean {
+  return set.completed || Boolean(set.completedAt);
+}
+
 function findNextIncompleteSet(session: Session): SessionPosition | null {
   for (let blockIndex = 0; blockIndex < session.blocks.length; blockIndex += 1) {
     const block = session.blocks[blockIndex];
@@ -19,7 +23,7 @@ function findNextIncompleteSet(session: Session): SessionPosition | null {
       const exercise = block.exercises[exerciseIndex];
       for (let setIndex = 0; setIndex < exercise.sets.length; setIndex += 1) {
         const set = exercise.sets[setIndex];
-        if (!set.completed) {
+        if (!isSetResolved(set)) {
           return { blockIndex, exerciseIndex, setIndex };
         }
       }
@@ -71,6 +75,11 @@ export default function TrainScreen() {
   const [plans, setPlans] = useState<WorkoutPlan[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [activeSession, setActiveSession] = useState<Session | null>(null);
+  const [actualRepsInput, setActualRepsInput] = useState('');
+  const [actualTimeInput, setActualTimeInput] = useState('');
+  const [isResting, setIsResting] = useState(false);
+  const [restSecondsRemaining, setRestSecondsRemaining] = useState(0);
+  const restIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -127,6 +136,7 @@ export default function TrainScreen() {
       return null;
     }
 
+    const usesTime = Boolean(planExercise.timeSeconds);
     const targetReps =
       planExercise.repsMin && planExercise.repsMax
         ? `${planExercise.repsMin}-${planExercise.repsMax} reps`
@@ -142,6 +152,8 @@ export default function TrainScreen() {
       name: planExercise.name,
       totalSets: sessionExercise.sets.length,
       target: targetTime ?? targetReps ?? 'No target',
+      usesTime,
+      restSeconds: planExercise.restSeconds,
     };
   }, [activeDay, activePosition, activeSession]);
 
@@ -158,18 +170,57 @@ export default function TrainScreen() {
     console.log('session started', session);
   };
 
-  const handleCompleteSet = async () => {
-    if (!activeSession || !activePosition) {
+  const stopRestTimer = () => {
+    if (restIntervalRef.current) {
+      clearInterval(restIntervalRef.current);
+      restIntervalRef.current = null;
+    }
+    setIsResting(false);
+    setRestSecondsRemaining(0);
+  };
+
+  const startRestTimer = (seconds: number) => {
+    if (!seconds || seconds <= 0) {
+      return;
+    }
+
+    stopRestTimer();
+    setIsResting(true);
+    setRestSecondsRemaining(seconds);
+
+    restIntervalRef.current = setInterval(() => {
+      setRestSecondsRemaining((previous) => {
+        if (previous <= 1) {
+          stopRestTimer();
+          return 0;
+        }
+        return previous - 1;
+      });
+    }, 1000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (restIntervalRef.current) {
+        clearInterval(restIntervalRef.current);
+      }
+    };
+  }, []);
+
+  const handleSetAction = async (markCompleted: boolean) => {
+    if (!activeSession || !activePosition || isResting) {
       return;
     }
 
     const completedAt = new Date().toISOString();
+    const actualRepsValue = actualRepsInput ? Number(actualRepsInput) : undefined;
+    const actualTimeValue = actualTimeInput ? Number(actualTimeInput) : undefined;
     const updatedSession = updateSessionSet(activeSession, activePosition, (set) => ({
       ...set,
-      completed: true,
+      completed: markCompleted,
       completedAt,
-      actualReps: set.actualReps ?? set.targetReps,
-      actualTimeSeconds: set.actualTimeSeconds ?? set.targetTimeSeconds,
+      actualReps: markCompleted ? actualRepsValue ?? set.targetReps : undefined,
+      actualTimeSeconds: markCompleted ? actualTimeValue ?? set.targetTimeSeconds : undefined,
     }));
 
     const nextSession = isSessionComplete(updatedSession)
@@ -178,9 +229,16 @@ export default function TrainScreen() {
 
     await saveSession(nextSession);
     setActiveSession(nextSession.status === SessionStatus.Active ? nextSession : null);
+    setActualRepsInput('');
+    setActualTimeInput('');
 
     // eslint-disable-next-line no-console
     console.log('session progress saved', nextSession);
+
+    if (nextSession.status === SessionStatus.Active) {
+      const restSeconds = currentExerciseInfo?.restSeconds ?? 0;
+      startRestTimer(restSeconds);
+    }
   };
 
   return (
@@ -191,13 +249,36 @@ export default function TrainScreen() {
           <Text style={styles.sectionTitle}>Active Session</Text>
           {currentExerciseInfo ? (
             <>
-              <Text style={styles.statusText}>{currentExerciseInfo.name}</Text>
-              <Text style={styles.statusText}>
-                Set {activePosition ? activePosition.setIndex + 1 : 0} of{' '}
-                {currentExerciseInfo.totalSets}
-              </Text>
-              <Text style={styles.statusText}>Target: {currentExerciseInfo.target}</Text>
-              <Button title="Complete Set" onPress={handleCompleteSet} />
+              {isResting ? (
+                <View style={styles.restContainer}>
+                  <Text style={styles.statusText}>Rest: {restSecondsRemaining}s</Text>
+                  <Button title="Skip Rest" onPress={stopRestTimer} />
+                </View>
+              ) : (
+                <>
+                  <Text style={styles.statusText}>{currentExerciseInfo.name}</Text>
+                  <Text style={styles.statusText}>
+                    Set {activePosition ? activePosition.setIndex + 1 : 0} of{' '}
+                    {currentExerciseInfo.totalSets}
+                  </Text>
+                  <Text style={styles.statusText}>Target: {currentExerciseInfo.target}</Text>
+                  <View style={styles.inputRow}>
+                    <TextInput
+                      placeholder={currentExerciseInfo.usesTime ? 'Actual seconds' : 'Actual reps'}
+                      value={currentExerciseInfo.usesTime ? actualTimeInput : actualRepsInput}
+                      onChangeText={
+                        currentExerciseInfo.usesTime ? setActualTimeInput : setActualRepsInput
+                      }
+                      keyboardType="number-pad"
+                      style={styles.input}
+                    />
+                  </View>
+                  <View style={styles.buttonRow}>
+                    <Button title="Complete Set" onPress={() => handleSetAction(true)} />
+                    <Button title="Skip Set" onPress={() => handleSetAction(false)} />
+                  </View>
+                </>
+              )}
             </>
           ) : (
             <Text style={styles.statusText}>Unable to load active session details.</Text>
@@ -263,5 +344,24 @@ const styles = StyleSheet.create({
   },
   rowText: {
     flex: 1,
+  },
+  inputRow: {
+    width: '100%',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  restContainer: {
+    alignItems: 'center',
+    gap: 12,
   },
 });
