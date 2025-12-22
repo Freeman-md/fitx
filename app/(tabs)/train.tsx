@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { SessionStatus } from '@/data/models';
@@ -135,7 +135,10 @@ export default function TrainScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+      alwaysBounceVertical={false}>
       {activeSession && activeSession.status === SessionStatus.Active ? (
         <View style={styles.section}>
           <SectionTitle>Active Session</SectionTitle>
@@ -229,13 +232,12 @@ export default function TrainScreen() {
           ) : null}
         </>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     justifyContent: 'center',
     padding: 16,
     gap: 16,

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { Session, WorkoutDay, WorkoutPlan } from '@/data/models';
 import { RowText, SectionTitle } from '@/components/ui/text';
@@ -81,7 +81,7 @@ export default function SessionSummaryScreen() {
   }, [summary]);
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
       {summary ? (
         <View style={styles.section}>
           <RowText>Plan: {summary.plan?.name ?? 'Unknown'}</RowText>
@@ -96,13 +96,12 @@ export default function SessionSummaryScreen() {
       ) : (
         <RowText>No completed session found.</RowText>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 16,
     justifyContent: 'center',
     gap: 16,

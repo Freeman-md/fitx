@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { SessionStatus } from '@/data/models';
 import type { Session, WorkoutDay, WorkoutPlan } from '@/data/models';
@@ -106,7 +106,7 @@ export default function HistoryScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
       {completedSessions.length === 0 ? (
         <StatusText>No completed sessions yet.</StatusText>
       ) : (
@@ -148,13 +148,12 @@ export default function HistoryScreen() {
           ))}
         </View>
       ) : null}
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 16,
     gap: 16,
   },
