@@ -1,255 +1,35 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, AppState, Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { SessionStatus } from '@/data/models';
-import type { Session, WorkoutPlan } from '@/data/models';
-import { startSession } from '@/data/session';
-import {
-  findNextIncompleteSet,
-  getSessionBlock,
-  getSessionExercise,
-  isSessionComplete,
-  updateSessionSet,
-} from '@/data/session-runner';
-import {
-  clearRestState,
-  loadActiveSession,
-  loadRestState,
-  loadWorkoutPlans,
-  saveLastCompletedSessionId,
-  saveRestState,
-  saveSession,
-} from '@/data/storage';
+import { useTrainSession } from '@/hooks/use-train-session';
 
 export default function TrainScreen() {
   const router = useRouter();
-  const [plans, setPlans] = useState<WorkoutPlan[]>([]);
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const [activeSession, setActiveSession] = useState<Session | null>(null);
-  const [actualRepsInput, setActualRepsInput] = useState('');
-  const [actualTimeInput, setActualTimeInput] = useState('');
-  const [isResting, setIsResting] = useState(false);
-  const [restSecondsRemaining, setRestSecondsRemaining] = useState(0);
-  const [restEndsAt, setRestEndsAt] = useState<string | null>(null);
-  const restIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const appStateRef = useRef(AppState.currentState);
-
-  useEffect(() => {
-    const loadData = async () => {
-      const storedPlans = await loadWorkoutPlans();
-      const storedActiveSession = await loadActiveSession();
-      const storedRestState = await loadRestState();
-      setPlans(storedPlans);
-      setActiveSession(storedActiveSession);
-
-      // eslint-disable-next-line no-console
-      console.log('active session check', storedActiveSession);
-
-      if (storedActiveSession && storedRestState?.sessionId === storedActiveSession.id) {
-        resumeRestTimer(storedRestState.endsAt);
-      }
-    };
-
-    void loadData();
-  }, []);
-
-  const selectedPlan = useMemo(
-    () => plans.find((plan) => plan.id === selectedPlanId) ?? null,
-    [plans, selectedPlanId]
-  );
-
-  const activePlan = useMemo(() => {
-    if (!activeSession) {
-      return null;
-    }
-    return plans.find((plan) => plan.id === activeSession.workoutPlanId) ?? null;
-  }, [activeSession, plans]);
-
-  const activeDay = useMemo(() => {
-    if (!activePlan || !activeSession) {
-      return null;
-    }
-    return activePlan.days.find((day) => day.id === activeSession.workoutDayId) ?? null;
-  }, [activePlan, activeSession]);
-
-  const activePosition = useMemo(() => {
-    if (!activeSession || activeSession.status !== SessionStatus.Active) {
-      return null;
-    }
-    return findNextIncompleteSet(activeSession);
-  }, [activeSession]);
-
-  const currentExerciseInfo = useMemo(() => {
-    if (!activeSession || !activeDay || !activePosition) {
-      return null;
-    }
-    const sessionExercise = getSessionExercise(activeSession, activePosition);
-    const sessionBlock = getSessionBlock(activeSession, activePosition);
-    const planBlock = activeDay.blocks.find((block) => block.id === sessionBlock.blockId);
-    const planExercise = planBlock?.exercises.find(
-      (exercise) => exercise.id === sessionExercise.exerciseId
-    );
-
-    if (!planExercise) {
-      return null;
-    }
-
-    const usesTime = Boolean(planExercise.timeSeconds);
-    const targetReps =
-      planExercise.repsMin && planExercise.repsMax
-        ? `${planExercise.repsMin}-${planExercise.repsMax} reps`
-        : planExercise.repsMin
-          ? `${planExercise.repsMin} reps`
-          : planExercise.repsMax
-            ? `${planExercise.repsMax} reps`
-            : null;
-
-    const targetTime = planExercise.timeSeconds ? `${planExercise.timeSeconds}s` : null;
-
-    return {
-      name: planExercise.name,
-      totalSets: sessionExercise.sets.length,
-      target: targetTime ?? targetReps ?? 'No target',
-      usesTime,
-      restSeconds: planExercise.restSeconds,
-    };
-  }, [activeDay, activePosition, activeSession]);
-
-  const handleStartSession = async (plan: WorkoutPlan, dayId: string) => {
-    const day = plan.days.find((item) => item.id === dayId);
-    if (!day) {
-      return;
-    }
-
-    const session = await startSession(plan, day);
-    setActiveSession(session);
-
-    // eslint-disable-next-line no-console
-    console.log('session started', session);
-  };
-
-  const stopRestTimer = async () => {
-    if (restIntervalRef.current) {
-      clearInterval(restIntervalRef.current);
-      restIntervalRef.current = null;
-    }
-    setIsResting(false);
-    setRestSecondsRemaining(0);
-    setRestEndsAt(null);
-    await clearRestState();
-  };
-
-  const updateRestRemaining = (endsAt: string) => {
-    const remaining = Math.max(0, Math.ceil((Date.parse(endsAt) - Date.now()) / 1000));
-    setRestSecondsRemaining(remaining);
-    return remaining;
-  };
-
-  const startRestTimer = async (seconds: number, sessionId: string) => {
-    if (!seconds || seconds <= 0) {
-      return;
-    }
-
-    await stopRestTimer();
-    const endsAt = new Date(Date.now() + seconds * 1000).toISOString();
-    setIsResting(true);
-    setRestEndsAt(endsAt);
-    updateRestRemaining(endsAt);
-    await saveRestState({ sessionId, endsAt });
-
-    restIntervalRef.current = setInterval(() => {
-      const remaining = updateRestRemaining(endsAt);
-      if (remaining <= 0) {
-        void stopRestTimer();
-      }
-    }, 1000);
-  };
-
-  const resumeRestTimer = (endsAt: string) => {
-    if (!endsAt) {
-      return;
-    }
-
-    if (restIntervalRef.current) {
-      clearInterval(restIntervalRef.current);
-      restIntervalRef.current = null;
-    }
-
-    setIsResting(true);
-    setRestEndsAt(endsAt);
-    const remaining = updateRestRemaining(endsAt);
-    if (remaining <= 0) {
-      void stopRestTimer();
-      return;
-    }
-
-    restIntervalRef.current = setInterval(() => {
-      const nextRemaining = updateRestRemaining(endsAt);
-      if (nextRemaining <= 0) {
-        void stopRestTimer();
-      }
-    }, 1000);
-  };
-
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextState) => {
-      const previous = appStateRef.current;
-      appStateRef.current = nextState;
-
-      if (previous.match(/inactive|background/) && nextState === 'active' && restEndsAt) {
-        resumeRestTimer(restEndsAt);
-      }
-    });
-
-    return () => {
-      subscription.remove();
-      if (restIntervalRef.current) {
-        clearInterval(restIntervalRef.current);
-      }
-    };
-  }, [restEndsAt]);
-
-  const handleSetAction = async (markCompleted: boolean) => {
-    if (!activeSession || !activePosition || isResting) {
-      return;
-    }
-
-    const completedAt = new Date().toISOString();
-    const actualRepsValue = actualRepsInput ? Number(actualRepsInput) : undefined;
-    const actualTimeValue = actualTimeInput ? Number(actualTimeInput) : undefined;
-    const updatedSession = updateSessionSet(activeSession, activePosition, (set) => ({
-      ...set,
-      completed: markCompleted,
-      completedAt,
-      actualReps: markCompleted ? actualRepsValue ?? set.targetReps : undefined,
-      actualTimeSeconds: markCompleted ? actualTimeValue ?? set.targetTimeSeconds : undefined,
-    }));
-
-    const nextSession = isSessionComplete(updatedSession)
-      ? { ...updatedSession, status: SessionStatus.Completed, endedAt: completedAt }
-      : updatedSession;
-
-    await saveSession(nextSession);
-    if (nextSession.status === SessionStatus.Completed) {
-      await saveLastCompletedSessionId(nextSession.id);
-      await stopRestTimer();
-      setActiveSession(null);
+  const {
+    plans,
+    selectedPlanId,
+    setSelectedPlanId,
+    selectedPlan,
+    activeSession,
+    activePosition,
+    currentExerciseInfo,
+    actualRepsInput,
+    setActualRepsInput,
+    actualTimeInput,
+    setActualTimeInput,
+    isResting,
+    restSecondsRemaining,
+    startSessionForDay,
+    completeSet,
+    skipSet,
+    skipRest,
+    endSession,
+  } = useTrainSession({
+    onSessionCompleted: () => {
       router.push('/session-summary');
-    } else {
-      setActiveSession(nextSession);
-    }
-    setActualRepsInput('');
-    setActualTimeInput('');
-
-    // eslint-disable-next-line no-console
-    console.log('session progress saved', nextSession);
-
-    if (nextSession.status === SessionStatus.Active) {
-      const restSeconds = currentExerciseInfo?.restSeconds ?? 0;
-      await startRestTimer(restSeconds, nextSession.id);
-    }
-  };
+    },
+  });
 
   const handleEndSession = () => {
     if (!activeSession) {
@@ -265,31 +45,13 @@ export default function TrainScreen() {
         text: 'Abandon',
         style: 'destructive',
         onPress: async () => {
-          const endedAt = new Date().toISOString();
-          const nextSession: Session = {
-            ...activeSession,
-            status: SessionStatus.Abandoned,
-            endedAt,
-          };
-          await saveSession(nextSession);
-          await stopRestTimer();
-          setActiveSession(null);
+          await endSession(SessionStatus.Abandoned);
         },
       },
       {
         text: 'Complete',
         onPress: async () => {
-          const endedAt = new Date().toISOString();
-          const nextSession: Session = {
-            ...activeSession,
-            status: SessionStatus.Completed,
-            endedAt,
-          };
-          await saveSession(nextSession);
-          await saveLastCompletedSessionId(nextSession.id);
-          await stopRestTimer();
-          setActiveSession(null);
-          router.push('/session-summary');
+          await endSession(SessionStatus.Completed);
         },
       },
     ]);
@@ -306,7 +68,7 @@ export default function TrainScreen() {
               {isResting ? (
                 <View style={styles.restContainer}>
                   <Text style={styles.statusText}>Rest: {restSecondsRemaining}s</Text>
-                  <Button title="Skip Rest" onPress={() => void stopRestTimer()} />
+                  <Button title="Skip Rest" onPress={() => void skipRest()} />
                 </View>
               ) : (
                 <>
@@ -328,8 +90,8 @@ export default function TrainScreen() {
                     />
                   </View>
                   <View style={styles.buttonRow}>
-                    <Button title="Complete Set" onPress={() => handleSetAction(true)} />
-                    <Button title="Skip Set" onPress={() => handleSetAction(false)} />
+                    <Button title="Complete Set" onPress={() => void completeSet()} />
+                    <Button title="Skip Set" onPress={() => void skipSet()} />
                   </View>
                 </>
               )}
@@ -365,7 +127,7 @@ export default function TrainScreen() {
                   <Text style={styles.rowText}>{day.name}</Text>
                   <Button
                     title="Start Session"
-                    onPress={() => handleStartSession(selectedPlan, day.id)}
+                    onPress={() => void startSessionForDay(selectedPlan.id, day.id)}
                   />
                 </View>
               ))}
