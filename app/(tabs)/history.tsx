@@ -104,7 +104,6 @@ export default function HistoryScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>History</Text>
       {completedSessions.length === 0 ? (
         <StatusText>No completed sessions yet.</StatusText>
       ) : (
@@ -125,7 +124,6 @@ export default function HistoryScreen() {
       )}
       {selectedSession ? (
         <View style={styles.section}>
-          <SectionTitle>Session Details</SectionTitle>
           <RowText>Started: {selectedSession.startedAt}</RowText>
           <RowText>Ended: {selectedSession.endedAt}</RowText>
           <RowText>Plan: {sessionPlan?.name ?? 'Unknown'}</RowText>
@@ -156,11 +154,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     gap: 16,
-  },
-  title: {
-    textAlign: 'center',
-    fontSize: 18,
-    fontWeight: '600',
   },
   section: {
     gap: 8,

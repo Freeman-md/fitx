@@ -82,7 +82,6 @@ export default function SessionSummaryScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Session Summary</Text>
       {summary ? (
         <View style={styles.section}>
           <RowText>Plan: {summary.plan?.name ?? 'Unknown'}</RowText>
@@ -107,11 +106,6 @@ const styles = StyleSheet.create({
     padding: 16,
     justifyContent: 'center',
     gap: 16,
-  },
-  title: {
-    textAlign: 'center',
-    fontSize: 18,
-    fontWeight: '600',
   },
   section: {
     gap: 8,

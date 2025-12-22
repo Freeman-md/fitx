@@ -99,7 +99,6 @@ export default function TrainScreen() {
 
   return (
     <View style={styles.container}>
-      <Text>Train</Text>
       {activeSession && activeSession.status === SessionStatus.Active ? (
         <View style={styles.section}>
           <SectionTitle>Active Session</SectionTitle>
