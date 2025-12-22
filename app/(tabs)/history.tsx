@@ -1,9 +1,9 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function ModalScreen() {
+export default function HistoryScreen() {
   return (
     <View style={styles.container}>
-      <Text>Modal</Text>
+      <Text>History</Text>
     </View>
   );
 }
