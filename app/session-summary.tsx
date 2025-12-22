@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import type { Session, WorkoutDay, WorkoutPlan } from '@/data/models';
+import { RowText, SectionTitle } from '@/components/ui/text';
 import { loadLastCompletedSessionId, loadSessions, loadWorkoutPlans } from '@/data/storage';
 
 type SummaryData = {
@@ -84,19 +85,17 @@ export default function SessionSummaryScreen() {
       <Text style={styles.title}>Session Summary</Text>
       {summary ? (
         <View style={styles.section}>
-          <Text style={styles.rowText}>Plan: {summary.plan?.name ?? 'Unknown'}</Text>
-          <Text style={styles.rowText}>Day: {summary.day?.name ?? 'Unknown'}</Text>
-          <Text style={styles.rowText}>Started: {summary.session.startedAt}</Text>
-          <Text style={styles.rowText}>Ended: {summary.session.endedAt ?? 'In progress'}</Text>
-          <Text style={styles.sectionTitle}>Exercises Completed</Text>
+          <RowText>Plan: {summary.plan?.name ?? 'Unknown'}</RowText>
+          <RowText>Day: {summary.day?.name ?? 'Unknown'}</RowText>
+          <RowText>Started: {summary.session.startedAt}</RowText>
+          <RowText>Ended: {summary.session.endedAt ?? 'In progress'}</RowText>
+          <SectionTitle style={styles.sectionTitle}>Exercises Completed</SectionTitle>
           {exerciseList.map((name) => (
-            <Text key={name} style={styles.rowText}>
-              {name}
-            </Text>
+            <RowText key={name}>{name}</RowText>
           ))}
         </View>
       ) : (
-        <Text style={styles.rowText}>No completed session found.</Text>
+        <RowText>No completed session found.</RowText>
       )}
     </View>
   );
@@ -119,9 +118,5 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     marginTop: 8,
-    fontWeight: '600',
-  },
-  rowText: {
-    fontSize: 14,
   },
 });

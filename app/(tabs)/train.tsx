@@ -2,6 +2,7 @@ import { Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { SessionStatus } from '@/data/models';
+import { RowText, SectionTitle, StatusText } from '@/components/ui/text';
 import { useTrainSession } from '@/hooks/use-train-session';
 
 export default function TrainScreen() {
@@ -62,22 +63,22 @@ export default function TrainScreen() {
       <Text>Train</Text>
       {activeSession && activeSession.status === SessionStatus.Active ? (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Active Session</Text>
+          <SectionTitle>Active Session</SectionTitle>
           {currentExerciseInfo ? (
             <>
               {isResting ? (
                 <View style={styles.restContainer}>
-                  <Text style={styles.statusText}>Rest: {restSecondsRemaining}s</Text>
+                  <StatusText>Rest: {restSecondsRemaining}s</StatusText>
                   <Button title="Skip Rest" onPress={() => void skipRest()} />
                 </View>
               ) : (
                 <>
-                  <Text style={styles.statusText}>{currentExerciseInfo.name}</Text>
-                  <Text style={styles.statusText}>
+                  <StatusText>{currentExerciseInfo.name}</StatusText>
+                  <StatusText>
                     Set {activePosition ? activePosition.setIndex + 1 : 0} of{' '}
                     {currentExerciseInfo.totalSets}
-                  </Text>
-                  <Text style={styles.statusText}>Target: {currentExerciseInfo.target}</Text>
+                  </StatusText>
+                  <StatusText>Target: {currentExerciseInfo.target}</StatusText>
                   <View style={styles.inputRow}>
                     <TextInput
                       placeholder={currentExerciseInfo.usesTime ? 'Actual seconds' : 'Actual reps'}
@@ -100,20 +101,20 @@ export default function TrainScreen() {
               </View>
             </>
           ) : (
-            <Text style={styles.statusText}>Unable to load active session details.</Text>
+            <StatusText>Unable to load active session details.</StatusText>
           )}
         </View>
       ) : (
         <>
-          <Text style={styles.statusText}>No active session</Text>
+          <StatusText>No active session</StatusText>
           {plans.length === 0 ? (
-            <Text style={styles.statusText}>No plans available</Text>
+            <StatusText>No plans available</StatusText>
           ) : (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Plans</Text>
+              <SectionTitle>Plans</SectionTitle>
               {plans.map((plan) => (
                 <View key={plan.id} style={styles.row}>
-                  <Text style={styles.rowText}>{plan.name}</Text>
+                  <RowText style={styles.rowText}>{plan.name}</RowText>
                   <Button title="Select" onPress={() => setSelectedPlanId(plan.id)} />
                 </View>
               ))}
@@ -121,10 +122,10 @@ export default function TrainScreen() {
           )}
           {selectedPlan ? (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>{selectedPlan.name} Days</Text>
+              <SectionTitle>{selectedPlan.name} Days</SectionTitle>
               {selectedPlan.days.map((day) => (
                 <View key={day.id} style={styles.row}>
-                  <Text style={styles.rowText}>{day.name}</Text>
+                  <RowText style={styles.rowText}>{day.name}</RowText>
                   <Button
                     title="Start Session"
                     onPress={() => void startSessionForDay(selectedPlan.id, day.id)}
@@ -146,14 +147,8 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 16,
   },
-  statusText: {
-    textAlign: 'center',
-  },
   section: {
     gap: 12,
-  },
-  sectionTitle: {
-    fontWeight: '600',
   },
   row: {
     flexDirection: 'row',

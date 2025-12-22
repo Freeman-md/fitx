@@ -3,6 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { SessionStatus } from '@/data/models';
 import type { Session, WorkoutDay, WorkoutPlan } from '@/data/models';
+import { DetailText, RowText, SectionTitle, StatusText } from '@/components/ui/text';
 import { loadSessions, loadWorkoutPlans } from '@/data/storage';
 
 export default function HistoryScreen() {
@@ -105,42 +106,40 @@ export default function HistoryScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>History</Text>
       {completedSessions.length === 0 ? (
-        <Text style={styles.statusText}>No completed sessions yet.</Text>
+        <StatusText>No completed sessions yet.</StatusText>
       ) : (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Completed Sessions</Text>
+          <SectionTitle>Completed Sessions</SectionTitle>
           {completedSessions.map((session) => (
             <TouchableOpacity
               key={session.id}
               style={styles.row}
               onPress={() => setSelectedSessionId(session.id)}>
-              <Text style={styles.rowText}>
+              <RowText>
                 {session.endedAt ? new Date(session.endedAt).toLocaleString() : 'Unknown date'}
-              </Text>
-              <Text style={styles.rowText}>{formatDuration(session.startedAt, session.endedAt)}</Text>
+              </RowText>
+              <RowText>{formatDuration(session.startedAt, session.endedAt)}</RowText>
             </TouchableOpacity>
           ))}
         </View>
       )}
       {selectedSession ? (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Session Details</Text>
-          <Text style={styles.rowText}>Started: {selectedSession.startedAt}</Text>
-          <Text style={styles.rowText}>Ended: {selectedSession.endedAt}</Text>
-          <Text style={styles.rowText}>Plan: {sessionPlan?.name ?? 'Unknown'}</Text>
-          <Text style={styles.rowText}>Day: {sessionDay?.name ?? 'Unknown'}</Text>
+          <SectionTitle>Session Details</SectionTitle>
+          <RowText>Started: {selectedSession.startedAt}</RowText>
+          <RowText>Ended: {selectedSession.endedAt}</RowText>
+          <RowText>Plan: {sessionPlan?.name ?? 'Unknown'}</RowText>
+          <RowText>Day: {sessionDay?.name ?? 'Unknown'}</RowText>
           {selectedSession.blocks.map((block) => (
             <View key={block.blockId} style={styles.section}>
-              <Text style={styles.sectionSubtitle}>Block {block.blockId}</Text>
+              <SectionTitle>Block {block.blockId}</SectionTitle>
               {block.exercises.map((exercise) => (
                 <View key={exercise.exerciseId} style={styles.section}>
-                  <Text style={styles.rowText}>
+                  <RowText>
                     {exerciseNameLookup.get(exercise.exerciseId) ?? exercise.exerciseId}
-                  </Text>
+                  </RowText>
                   {formatSets(exercise, sessionDay).map((line) => (
-                    <Text key={line} style={styles.detailText}>
-                      {line}
-                    </Text>
+                    <DetailText key={line}>{line}</DetailText>
                   ))}
                 </View>
               ))}
@@ -163,28 +162,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
-  statusText: {
-    textAlign: 'center',
-  },
   section: {
     gap: 8,
-  },
-  sectionTitle: {
-    fontWeight: '600',
-  },
-  sectionSubtitle: {
-    fontWeight: '600',
   },
   row: {
     paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
-  },
-  rowText: {
-    fontSize: 14,
-  },
-  detailText: {
-    fontSize: 12,
-    color: '#555',
   },
 });
