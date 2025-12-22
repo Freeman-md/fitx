@@ -1,3 +1,4 @@
+import { SessionStatus } from './models';
 import type { Session, WorkoutPlan } from './models';
 
 export const workoutPlan: WorkoutPlan = {
@@ -88,7 +89,7 @@ export const session: Session = {
   workoutPlanId: 'plan-001',
   workoutDayId: 'day-001',
   startedAt: '2025-02-10T07:30:00.000Z',
-  status: 'active',
+  status: SessionStatus.Active,
   blocks: [
     {
       blockId: 'block-001',

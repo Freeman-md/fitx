@@ -1,9 +1,71 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 
-import type { Session, WorkoutPlan } from '@/data/models';
+import { SessionStatus } from '@/data/models';
+import type { Session, SessionBlock, SessionExercise, SessionSet, WorkoutPlan } from '@/data/models';
 import { startSession } from '@/data/session';
-import { loadActiveSession, loadWorkoutPlans } from '@/data/storage';
+import { loadActiveSession, loadWorkoutPlans, saveSession } from '@/data/storage';
+
+type SessionPosition = {
+  blockIndex: number;
+  exerciseIndex: number;
+  setIndex: number;
+};
+
+function findNextIncompleteSet(session: Session): SessionPosition | null {
+  for (let blockIndex = 0; blockIndex < session.blocks.length; blockIndex += 1) {
+    const block = session.blocks[blockIndex];
+    for (let exerciseIndex = 0; exerciseIndex < block.exercises.length; exerciseIndex += 1) {
+      const exercise = block.exercises[exerciseIndex];
+      for (let setIndex = 0; setIndex < exercise.sets.length; setIndex += 1) {
+        const set = exercise.sets[setIndex];
+        if (!set.completed) {
+          return { blockIndex, exerciseIndex, setIndex };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function isSessionComplete(session: Session): boolean {
+  return findNextIncompleteSet(session) === null;
+}
+
+function updateSessionSet(
+  session: Session,
+  position: SessionPosition,
+  updater: (set: SessionSet) => SessionSet
+): Session {
+  const blocks = session.blocks.map((block, blockIndex) => {
+    if (blockIndex !== position.blockIndex) {
+      return block;
+    }
+    const exercises = block.exercises.map((exercise, exerciseIndex) => {
+      if (exerciseIndex !== position.exerciseIndex) {
+        return exercise;
+      }
+      const sets = exercise.sets.map((set, setIndex) => {
+        if (setIndex !== position.setIndex) {
+          return set;
+        }
+        return updater(set);
+      });
+      return { ...exercise, sets };
+    });
+    return { ...block, exercises };
+  });
+
+  return { ...session, blocks };
+}
+
+function getSessionBlock(session: Session, position: SessionPosition): SessionBlock {
+  return session.blocks[position.blockIndex];
+}
+
+function getSessionExercise(session: Session, position: SessionPosition): SessionExercise {
+  return getSessionBlock(session, position).exercises[position.exerciseIndex];
+}
 
 export default function TrainScreen() {
   const [plans, setPlans] = useState<WorkoutPlan[]>([]);
@@ -29,6 +91,60 @@ export default function TrainScreen() {
     [plans, selectedPlanId]
   );
 
+  const activePlan = useMemo(() => {
+    if (!activeSession) {
+      return null;
+    }
+    return plans.find((plan) => plan.id === activeSession.workoutPlanId) ?? null;
+  }, [activeSession, plans]);
+
+  const activeDay = useMemo(() => {
+    if (!activePlan || !activeSession) {
+      return null;
+    }
+    return activePlan.days.find((day) => day.id === activeSession.workoutDayId) ?? null;
+  }, [activePlan, activeSession]);
+
+  const activePosition = useMemo(() => {
+    if (!activeSession || activeSession.status !== SessionStatus.Active) {
+      return null;
+    }
+    return findNextIncompleteSet(activeSession);
+  }, [activeSession]);
+
+  const currentExerciseInfo = useMemo(() => {
+    if (!activeSession || !activeDay || !activePosition) {
+      return null;
+    }
+    const sessionExercise = getSessionExercise(activeSession, activePosition);
+    const sessionBlock = getSessionBlock(activeSession, activePosition);
+    const planBlock = activeDay.blocks.find((block) => block.id === sessionBlock.blockId);
+    const planExercise = planBlock?.exercises.find(
+      (exercise) => exercise.id === sessionExercise.exerciseId
+    );
+
+    if (!planExercise) {
+      return null;
+    }
+
+    const targetReps =
+      planExercise.repsMin && planExercise.repsMax
+        ? `${planExercise.repsMin}-${planExercise.repsMax} reps`
+        : planExercise.repsMin
+          ? `${planExercise.repsMin} reps`
+          : planExercise.repsMax
+            ? `${planExercise.repsMax} reps`
+            : null;
+
+    const targetTime = planExercise.timeSeconds ? `${planExercise.timeSeconds}s` : null;
+
+    return {
+      name: planExercise.name,
+      totalSets: sessionExercise.sets.length,
+      target: targetTime ?? targetReps ?? 'No target',
+    };
+  }, [activeDay, activePosition, activeSession]);
+
   const handleStartSession = async (plan: WorkoutPlan, dayId: string) => {
     const day = plan.days.find((item) => item.id === dayId);
     if (!day) {
@@ -42,38 +158,83 @@ export default function TrainScreen() {
     console.log('session started', session);
   };
 
+  const handleCompleteSet = async () => {
+    if (!activeSession || !activePosition) {
+      return;
+    }
+
+    const completedAt = new Date().toISOString();
+    const updatedSession = updateSessionSet(activeSession, activePosition, (set) => ({
+      ...set,
+      completed: true,
+      completedAt,
+      actualReps: set.actualReps ?? set.targetReps,
+      actualTimeSeconds: set.actualTimeSeconds ?? set.targetTimeSeconds,
+    }));
+
+    const nextSession = isSessionComplete(updatedSession)
+      ? { ...updatedSession, status: SessionStatus.Completed, endedAt: completedAt }
+      : updatedSession;
+
+    await saveSession(nextSession);
+    setActiveSession(nextSession.status === SessionStatus.Active ? nextSession : null);
+
+    // eslint-disable-next-line no-console
+    console.log('session progress saved', nextSession);
+  };
+
   return (
     <View style={styles.container}>
       <Text>Train</Text>
-      {activeSession ? (
-        <Text style={styles.statusText}>Active session: {activeSession.id}</Text>
-      ) : (
-        <Text style={styles.statusText}>No active session</Text>
-      )}
-      {plans.length === 0 ? (
-        <Text style={styles.statusText}>No plans available</Text>
-      ) : (
+      {activeSession && activeSession.status === SessionStatus.Active ? (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Plans</Text>
-          {plans.map((plan) => (
-            <View key={plan.id} style={styles.row}>
-              <Text style={styles.rowText}>{plan.name}</Text>
-              <Button title="Select" onPress={() => setSelectedPlanId(plan.id)} />
-            </View>
-          ))}
+          <Text style={styles.sectionTitle}>Active Session</Text>
+          {currentExerciseInfo ? (
+            <>
+              <Text style={styles.statusText}>{currentExerciseInfo.name}</Text>
+              <Text style={styles.statusText}>
+                Set {activePosition ? activePosition.setIndex + 1 : 0} of{' '}
+                {currentExerciseInfo.totalSets}
+              </Text>
+              <Text style={styles.statusText}>Target: {currentExerciseInfo.target}</Text>
+              <Button title="Complete Set" onPress={handleCompleteSet} />
+            </>
+          ) : (
+            <Text style={styles.statusText}>Unable to load active session details.</Text>
+          )}
         </View>
+      ) : (
+        <>
+          <Text style={styles.statusText}>No active session</Text>
+          {plans.length === 0 ? (
+            <Text style={styles.statusText}>No plans available</Text>
+          ) : (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Plans</Text>
+              {plans.map((plan) => (
+                <View key={plan.id} style={styles.row}>
+                  <Text style={styles.rowText}>{plan.name}</Text>
+                  <Button title="Select" onPress={() => setSelectedPlanId(plan.id)} />
+                </View>
+              ))}
+            </View>
+          )}
+          {selectedPlan ? (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>{selectedPlan.name} Days</Text>
+              {selectedPlan.days.map((day) => (
+                <View key={day.id} style={styles.row}>
+                  <Text style={styles.rowText}>{day.name}</Text>
+                  <Button
+                    title="Start Session"
+                    onPress={() => handleStartSession(selectedPlan, day.id)}
+                  />
+                </View>
+              ))}
+            </View>
+          ) : null}
+        </>
       )}
-      {selectedPlan ? (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{selectedPlan.name} Days</Text>
-          {selectedPlan.days.map((day) => (
-            <View key={day.id} style={styles.row}>
-              <Text style={styles.rowText}>{day.name}</Text>
-              <Button title="Start Session" onPress={() => handleStartSession(selectedPlan, day.id)} />
-            </View>
-          ))}
-        </View>
-      ) : null}
     </View>
   );
 }

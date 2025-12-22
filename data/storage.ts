@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { SessionStatus } from './models';
 import type { Session, WorkoutPlan } from './models';
 
 const WORKOUT_PLANS_KEY = 'fitx:workout-plans';
@@ -38,7 +39,7 @@ export async function saveSessions(sessions: Session[]): Promise<void> {
 
 export async function loadActiveSession(): Promise<Session | null> {
   const sessions = await loadSessions();
-  return sessions.find((item) => item.status === 'active') ?? null;
+  return sessions.find((item) => item.status === SessionStatus.Active) ?? null;
 }
 
 export async function resetStorage(): Promise<void> {

@@ -1,3 +1,4 @@
+import { SessionStatus } from './models';
 import type { Session, WorkoutDay, WorkoutPlan } from './models';
 import { loadSessions, saveSessions } from './storage';
 
@@ -12,7 +13,7 @@ function buildSession(plan: WorkoutPlan, day: WorkoutDay, startedAt: string): Se
     workoutPlanId: plan.id,
     workoutDayId: day.id,
     startedAt,
-    status: 'active',
+    status: SessionStatus.Active,
     blocks: day.blocks.map((block) => ({
       blockId: block.id,
       startedAt,
@@ -35,13 +36,13 @@ function closeActiveSessions(
   nextSessionId: string
 ): Session[] {
   return sessions.map((session) => {
-    if (session.status !== 'active' || session.id === nextSessionId) {
+    if (session.status !== SessionStatus.Active || session.id === nextSessionId) {
       return session;
     }
 
     return {
       ...session,
-      status: 'abandoned',
+      status: SessionStatus.Abandoned,
       endedAt: session.endedAt ?? endedAt,
     };
   });

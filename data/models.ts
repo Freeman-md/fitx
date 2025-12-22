@@ -29,13 +29,21 @@ export interface Exercise {
   notes?: string;
 }
 
+export const SessionStatus = {
+  Active: 'active',
+  Completed: 'completed',
+  Abandoned: 'abandoned',
+} as const;
+
+export type SessionStatus = (typeof SessionStatus)[keyof typeof SessionStatus];
+
 export interface Session {
   id: string;
   workoutPlanId: string;
   workoutDayId: string;
   startedAt: string;
   endedAt?: string;
-  status: 'active' | 'completed' | 'abandoned';
+  status: SessionStatus;
   blocks: SessionBlock[];
 }
 
