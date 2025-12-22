@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
@@ -7,6 +8,7 @@ import { useTrainSession } from '@/hooks/use-train-session';
 
 export default function TrainScreen() {
   const router = useRouter();
+  const inputRef = useRef<TextInput>(null);
   const {
     plans,
     selectedPlanId,
@@ -31,6 +33,12 @@ export default function TrainScreen() {
       router.push('/session-summary');
     },
   });
+
+  useEffect(() => {
+    if (activeSession && activeSession.status === SessionStatus.Active && !isResting) {
+      inputRef.current?.focus();
+    }
+  }, [activeSession, isResting]);
 
   const handleEndSession = () => {
     if (!activeSession) {
@@ -112,6 +120,7 @@ export default function TrainScreen() {
                   <StatusText>Target: {currentExerciseInfo.target}</StatusText>
                   <View style={styles.inputRow}>
                     <TextInput
+                      ref={inputRef}
                       placeholder={currentExerciseInfo.usesTime ? 'Actual seconds' : 'Actual reps'}
                       value={currentExerciseInfo.usesTime ? actualTimeInput : actualRepsInput}
                       onChangeText={
