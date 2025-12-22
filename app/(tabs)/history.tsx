@@ -4,12 +4,15 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SessionStatus } from '@/data/models';
 import type { Session, WorkoutDay, WorkoutPlan } from '@/data/models';
 import { DetailText, RowText, SectionTitle, StatusText } from '@/components/ui/text';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { loadSessions, loadWorkoutPlans } from '@/data/storage';
 
 export default function HistoryScreen() {
+  const colorScheme = useColorScheme();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [plans, setPlans] = useState<WorkoutPlan[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const dividerColor = colorScheme === 'dark' ? '#374151' : '#ddd';
 
   useEffect(() => {
     const loadData = async () => {
@@ -112,7 +115,7 @@ export default function HistoryScreen() {
           {completedSessions.map((session) => (
             <TouchableOpacity
               key={session.id}
-              style={styles.row}
+              style={[styles.row, { borderBottomColor: dividerColor }]}
               onPress={() => setSelectedSessionId(session.id)}>
               <RowText>
                 {session.endedAt ? new Date(session.endedAt).toLocaleString() : 'Unknown date'}
@@ -161,6 +164,5 @@ const styles = StyleSheet.create({
   row: {
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
   },
 });

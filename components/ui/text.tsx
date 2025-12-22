@@ -1,6 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, type TextProps } from 'react-native';
 
+import { useColorScheme } from '@/hooks/use-color-scheme';
+
 type StyledTextProps = TextProps & {
   children: React.ReactNode;
 };
@@ -30,8 +32,10 @@ export function StatusText({ children, style, ...props }: StyledTextProps) {
 }
 
 export function DetailText({ children, style, ...props }: StyledTextProps) {
+  const colorScheme = useColorScheme();
+  const detailColor = colorScheme === 'dark' ? '#9ca3af' : '#555';
   return (
-    <Text style={[styles.detailText, style]} {...props}>
+    <Text style={[styles.detailText, { color: detailColor }, style]} {...props}>
       {children}
     </Text>
   );
@@ -49,6 +53,5 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 12,
-    color: '#555',
   },
 });

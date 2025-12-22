@@ -5,9 +5,11 @@ import { useRouter } from 'expo-router';
 import { SessionStatus } from '@/data/models';
 import { RowText, SectionTitle, StatusText } from '@/components/ui/text';
 import { useTrainSession } from '@/hooks/use-train-session';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TrainScreen() {
   const router = useRouter();
+  const colorScheme = useColorScheme();
   const inputRef = useRef<TextInput>(null);
   const {
     plans,
@@ -33,6 +35,37 @@ export default function TrainScreen() {
       router.push('/session-summary');
     },
   });
+
+  const colors =
+    colorScheme === 'dark'
+      ? {
+          border: '#374151',
+          inputBorder: '#4b5563',
+          inputBackground: '#111827',
+          inputText: '#f9fafb',
+          inputPlaceholder: '#9ca3af',
+          buttonPrimaryBg: '#f3f4f6',
+          buttonPrimaryText: '#111827',
+          buttonSecondaryBg: '#1f2937',
+          buttonSecondaryBorder: '#374151',
+          buttonSecondaryText: '#e5e7eb',
+          buttonDestructiveBg: '#b91c1c',
+          buttonDestructiveText: '#ffffff',
+        }
+      : {
+          border: '#e5e7eb',
+          inputBorder: '#d1d5db',
+          inputBackground: '#ffffff',
+          inputText: '#111827',
+          inputPlaceholder: '#6b7280',
+          buttonPrimaryBg: '#111827',
+          buttonPrimaryText: '#ffffff',
+          buttonSecondaryBg: '#f3f4f6',
+          buttonSecondaryBorder: '#d1d5db',
+          buttonSecondaryText: '#111827',
+          buttonDestructiveBg: '#dc2626',
+          buttonDestructiveText: '#ffffff',
+        };
 
   useEffect(() => {
     if (activeSession && activeSession.status === SessionStatus.Active && !isResting) {
@@ -73,16 +106,20 @@ export default function TrainScreen() {
   ) => {
     const variantStyle =
       variant === 'primary'
-        ? styles.buttonPrimary
+        ? { backgroundColor: colors.buttonPrimaryBg }
         : variant === 'secondary'
-          ? styles.buttonSecondary
-          : styles.buttonDestructive;
+          ? {
+              backgroundColor: colors.buttonSecondaryBg,
+              borderWidth: 1,
+              borderColor: colors.buttonSecondaryBorder,
+            }
+          : { backgroundColor: colors.buttonDestructiveBg };
     const variantTextStyle =
       variant === 'primary'
-        ? styles.buttonTextPrimary
+        ? { color: colors.buttonPrimaryText }
         : variant === 'secondary'
-          ? styles.buttonTextSecondary
-          : styles.buttonTextDestructive;
+          ? { color: colors.buttonSecondaryText }
+          : { color: colors.buttonDestructiveText };
     return (
       <Pressable
         accessibilityRole="button"
@@ -121,12 +158,20 @@ export default function TrainScreen() {
                     <TextInput
                       ref={inputRef}
                       placeholder={currentExerciseInfo.usesTime ? 'Actual seconds' : 'Actual reps'}
+                      placeholderTextColor={colors.inputPlaceholder}
                       value={currentExerciseInfo.usesTime ? actualTimeInput : actualRepsInput}
                       onChangeText={
                         currentExerciseInfo.usesTime ? setActualTimeInput : setActualRepsInput
                       }
                       keyboardType="number-pad"
-                      style={styles.input}
+                      style={[
+                        styles.input,
+                        {
+                          borderColor: colors.inputBorder,
+                          backgroundColor: colors.inputBackground,
+                          color: colors.inputText,
+                        },
+                      ]}
                     />
                   </View>
                   <View style={styles.buttonStack}>
@@ -152,7 +197,7 @@ export default function TrainScreen() {
             <View style={styles.section}>
               <SectionTitle>Plans</SectionTitle>
               {plans.map((plan) => (
-                <View key={plan.id} style={styles.itemCard}>
+                <View key={plan.id} style={[styles.itemCard, { borderColor: colors.border }]}>
                   <RowText>{plan.name}</RowText>
                   {renderActionButton('Select', () => setSelectedPlanId(plan.id), 'secondary')}
                 </View>
@@ -163,7 +208,7 @@ export default function TrainScreen() {
             <View style={styles.section}>
               <SectionTitle>{selectedPlan.name} Days</SectionTitle>
               {selectedPlan.days.map((day) => (
-                <View key={day.id} style={styles.itemCard}>
+                <View key={day.id} style={[styles.itemCard, { borderColor: colors.border }]}>
                   <RowText>{day.name}</RowText>
                   {renderActionButton(
                     'Start Session',
@@ -192,7 +237,6 @@ const styles = StyleSheet.create({
   },
   itemCard: {
     borderWidth: 1,
-    borderColor: '#e5e7eb',
     borderRadius: 10,
     padding: 12,
     gap: 12,
@@ -202,7 +246,6 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
     borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -228,28 +271,8 @@ const styles = StyleSheet.create({
   buttonPressed: {
     opacity: 0.8,
   },
-  buttonPrimary: {
-    backgroundColor: '#111827',
-  },
-  buttonSecondary: {
-    backgroundColor: '#f3f4f6',
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-  },
-  buttonDestructive: {
-    backgroundColor: '#dc2626',
-  },
   buttonText: {
     fontSize: 16,
     fontWeight: '600',
-  },
-  buttonTextPrimary: {
-    color: '#ffffff',
-  },
-  buttonTextSecondary: {
-    color: '#111827',
-  },
-  buttonTextDestructive: {
-    color: '#ffffff',
   },
 });
