@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, AppState, Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useRouter } from 'expo-router';
 
 import { SessionStatus } from '@/data/models';
 import type { Session, SessionBlock, SessionExercise, SessionSet, WorkoutPlan } from '@/data/models';
@@ -9,6 +10,7 @@ import {
   loadActiveSession,
   loadRestState,
   loadWorkoutPlans,
+  saveLastCompletedSessionId,
   saveRestState,
   saveSession,
 } from '@/data/storage';
@@ -79,6 +81,7 @@ function getSessionExercise(session: Session, position: SessionPosition): Sessio
 }
 
 export default function TrainScreen() {
+  const router = useRouter();
   const [plans, setPlans] = useState<WorkoutPlan[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [activeSession, setActiveSession] = useState<Session | null>(null);
@@ -286,7 +289,14 @@ export default function TrainScreen() {
       : updatedSession;
 
     await saveSession(nextSession);
-    setActiveSession(nextSession.status === SessionStatus.Active ? nextSession : null);
+    if (nextSession.status === SessionStatus.Completed) {
+      await saveLastCompletedSessionId(nextSession.id);
+      await stopRestTimer();
+      setActiveSession(null);
+      router.push('/session-summary');
+    } else {
+      setActiveSession(nextSession);
+    }
     setActualRepsInput('');
     setActualTimeInput('');
 
@@ -334,8 +344,10 @@ export default function TrainScreen() {
             endedAt,
           };
           await saveSession(nextSession);
+          await saveLastCompletedSessionId(nextSession.id);
           await stopRestTimer();
           setActiveSession(null);
+          router.push('/session-summary');
         },
       },
     ]);

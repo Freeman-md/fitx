@@ -6,6 +6,7 @@ import type { Session, WorkoutPlan } from './models';
 const WORKOUT_PLANS_KEY = 'fitx:workout-plans';
 const SESSIONS_KEY = 'fitx:sessions';
 const REST_STATE_KEY = 'fitx:rest-state';
+const LAST_COMPLETED_SESSION_KEY = 'fitx:last-completed-session';
 
 type RestState = {
   sessionId: string;
@@ -49,7 +50,12 @@ export async function loadActiveSession(): Promise<Session | null> {
 }
 
 export async function resetStorage(): Promise<void> {
-  await AsyncStorage.multiRemove([WORKOUT_PLANS_KEY, SESSIONS_KEY, REST_STATE_KEY]);
+  await AsyncStorage.multiRemove([
+    WORKOUT_PLANS_KEY,
+    SESSIONS_KEY,
+    REST_STATE_KEY,
+    LAST_COMPLETED_SESSION_KEY,
+  ]);
 }
 
 export async function saveRestState(state: RestState): Promise<void> {
@@ -66,4 +72,12 @@ export async function loadRestState(): Promise<RestState | null> {
 
 export async function clearRestState(): Promise<void> {
   await AsyncStorage.removeItem(REST_STATE_KEY);
+}
+
+export async function saveLastCompletedSessionId(sessionId: string): Promise<void> {
+  await AsyncStorage.setItem(LAST_COMPLETED_SESSION_KEY, sessionId);
+}
+
+export async function loadLastCompletedSessionId(): Promise<string | null> {
+  return AsyncStorage.getItem(LAST_COMPLETED_SESSION_KEY);
 }
