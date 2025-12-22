@@ -21,7 +21,7 @@ export async function saveSession(session: Session): Promise<void> {
   const sessions = await loadSessions();
   const next = sessions.filter((item) => item.id !== session.id);
   next.push(session);
-  await AsyncStorage.setItem(SESSIONS_KEY, JSON.stringify(next));
+  await saveSessions(next);
 }
 
 export async function loadSessions(): Promise<Session[]> {
@@ -30,6 +30,10 @@ export async function loadSessions(): Promise<Session[]> {
     return [];
   }
   return JSON.parse(stored) as Session[];
+}
+
+export async function saveSessions(sessions: Session[]): Promise<void> {
+  await AsyncStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
 }
 
 export async function loadActiveSession(): Promise<Session | null> {
