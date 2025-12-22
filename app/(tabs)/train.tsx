@@ -54,10 +54,10 @@ export default function TrainScreen() {
         }
       : {
           border: '#e5e7eb',
-          inputBorder: '#d1d5db',
-          inputBackground: '#ffffff',
-          inputText: '#111827',
-          inputPlaceholder: '#6b7280',
+          inputBorder: '#ccc',
+          inputBackground: undefined,
+          inputText: undefined,
+          inputPlaceholder: undefined,
           buttonPrimaryBg: '#111827',
           buttonPrimaryText: '#ffffff',
           buttonSecondaryBg: '#f3f4f6',
@@ -166,11 +166,9 @@ export default function TrainScreen() {
                       keyboardType="number-pad"
                       style={[
                         styles.input,
-                        {
-                          borderColor: colors.inputBorder,
-                          backgroundColor: colors.inputBackground,
-                          color: colors.inputText,
-                        },
+                        colors.inputBorder ? { borderColor: colors.inputBorder } : null,
+                        colors.inputBackground ? { backgroundColor: colors.inputBackground } : null,
+                        colors.inputText ? { color: colors.inputText } : null,
                       ]}
                     />
                   </View>
@@ -197,7 +195,12 @@ export default function TrainScreen() {
             <View style={styles.section}>
               <SectionTitle>Plans</SectionTitle>
               {plans.map((plan) => (
-                <View key={plan.id} style={[styles.itemCard, { borderColor: colors.border }]}>
+                <View
+                  key={plan.id}
+                  style={[
+                    styles.itemCard,
+                    colorScheme === 'dark' ? { borderColor: colors.border } : null,
+                  ]}>
                   <RowText>{plan.name}</RowText>
                   {renderActionButton('Select', () => setSelectedPlanId(plan.id), 'secondary')}
                 </View>
@@ -208,7 +211,12 @@ export default function TrainScreen() {
             <View style={styles.section}>
               <SectionTitle>{selectedPlan.name} Days</SectionTitle>
               {selectedPlan.days.map((day) => (
-                <View key={day.id} style={[styles.itemCard, { borderColor: colors.border }]}>
+                <View
+                  key={day.id}
+                  style={[
+                    styles.itemCard,
+                    colorScheme === 'dark' ? { borderColor: colors.border } : null,
+                  ]}>
                   <RowText>{day.name}</RowText>
                   {renderActionButton(
                     'Start Session',
@@ -237,6 +245,7 @@ const styles = StyleSheet.create({
   },
   itemCard: {
     borderWidth: 1,
+    borderColor: '#e5e7eb',
     borderRadius: 10,
     padding: 12,
     gap: 12,
@@ -246,6 +255,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
+    borderColor: '#ccc',
     borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 8,
