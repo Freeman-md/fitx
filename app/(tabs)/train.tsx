@@ -1,4 +1,4 @@
-import { Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { SessionStatus } from '@/data/models';
@@ -58,6 +58,37 @@ export default function TrainScreen() {
     ]);
   };
 
+  const renderActionButton = (
+    label: string,
+    onPress: () => void | Promise<void>,
+    variant: 'primary' | 'secondary' | 'destructive'
+  ) => {
+    const variantStyle =
+      variant === 'primary'
+        ? styles.buttonPrimary
+        : variant === 'secondary'
+          ? styles.buttonSecondary
+          : styles.buttonDestructive;
+    const variantTextStyle =
+      variant === 'primary'
+        ? styles.buttonTextPrimary
+        : variant === 'secondary'
+          ? styles.buttonTextSecondary
+          : styles.buttonTextDestructive;
+    return (
+      <Pressable
+        accessibilityRole="button"
+        onPress={onPress}
+        style={({ pressed }) => [
+          styles.buttonBase,
+          variantStyle,
+          pressed && styles.buttonPressed,
+        ]}>
+        <Text style={[styles.buttonText, variantTextStyle]}>{label}</Text>
+      </Pressable>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <Text>Train</Text>
@@ -69,7 +100,7 @@ export default function TrainScreen() {
               {isResting ? (
                 <View style={styles.restContainer}>
                   <StatusText>Rest: {restSecondsRemaining}s</StatusText>
-                  <Button title="Skip Rest" onPress={() => void skipRest()} />
+                  {renderActionButton('Skip Rest', () => void skipRest(), 'secondary')}
                 </View>
               ) : (
                 <>
@@ -90,14 +121,14 @@ export default function TrainScreen() {
                       style={styles.input}
                     />
                   </View>
-                  <View style={styles.buttonRow}>
-                    <Button title="Complete Set" onPress={() => void completeSet()} />
-                    <Button title="Skip Set" onPress={() => void skipSet()} />
+                  <View style={styles.buttonStack}>
+                    {renderActionButton('Complete Set', () => void completeSet(), 'primary')}
+                    {renderActionButton('Skip Set', () => void skipSet(), 'secondary')}
                   </View>
                 </>
               )}
               <View style={styles.endSessionRow}>
-                <Button title="End Session" onPress={handleEndSession} />
+                {renderActionButton('End Session', handleEndSession, 'destructive')}
               </View>
             </>
           ) : (
@@ -113,9 +144,9 @@ export default function TrainScreen() {
             <View style={styles.section}>
               <SectionTitle>Plans</SectionTitle>
               {plans.map((plan) => (
-                <View key={plan.id} style={styles.row}>
-                  <RowText style={styles.rowText}>{plan.name}</RowText>
-                  <Button title="Select" onPress={() => setSelectedPlanId(plan.id)} />
+                <View key={plan.id} style={styles.itemCard}>
+                  <RowText>{plan.name}</RowText>
+                  {renderActionButton('Select', () => setSelectedPlanId(plan.id), 'secondary')}
                 </View>
               ))}
             </View>
@@ -124,12 +155,13 @@ export default function TrainScreen() {
             <View style={styles.section}>
               <SectionTitle>{selectedPlan.name} Days</SectionTitle>
               {selectedPlan.days.map((day) => (
-                <View key={day.id} style={styles.row}>
-                  <RowText style={styles.rowText}>{day.name}</RowText>
-                  <Button
-                    title="Start Session"
-                    onPress={() => void startSessionForDay(selectedPlan.id, day.id)}
-                  />
+                <View key={day.id} style={styles.itemCard}>
+                  <RowText>{day.name}</RowText>
+                  {renderActionButton(
+                    'Start Session',
+                    () => void startSessionForDay(selectedPlan.id, day.id),
+                    'primary'
+                  )}
                 </View>
               ))}
             </View>
@@ -150,14 +182,12 @@ const styles = StyleSheet.create({
   section: {
     gap: 12,
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  itemCard: {
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 10,
+    padding: 12,
     gap: 12,
-  },
-  rowText: {
-    flex: 1,
   },
   inputRow: {
     width: '100%',
@@ -169,9 +199,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  buttonStack: {
     gap: 12,
   },
   restContainer: {
@@ -180,5 +208,40 @@ const styles = StyleSheet.create({
   },
   endSessionRow: {
     marginTop: 12,
+  },
+  buttonBase: {
+    minHeight: 48,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonPressed: {
+    opacity: 0.8,
+  },
+  buttonPrimary: {
+    backgroundColor: '#111827',
+  },
+  buttonSecondary: {
+    backgroundColor: '#f3f4f6',
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+  },
+  buttonDestructive: {
+    backgroundColor: '#dc2626',
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  buttonTextPrimary: {
+    color: '#ffffff',
+  },
+  buttonTextSecondary: {
+    color: '#111827',
+  },
+  buttonTextDestructive: {
+    color: '#ffffff',
   },
 });
