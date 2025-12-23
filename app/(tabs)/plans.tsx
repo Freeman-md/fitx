@@ -1,43 +1,94 @@
-import { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Alert, Button, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { session, workoutPlan } from '@/data/sample-data';
-import {
-  loadActiveSession,
-  loadSessions,
-  loadWorkoutPlans,
-  saveSession,
-  saveWorkoutPlans,
-} from '@/data/storage';
+import type { WorkoutPlan } from '@/data/models';
+import { loadWorkoutPlans, saveWorkoutPlans } from '@/data/storage';
 
 export default function PlansScreen() {
+  const [plans, setPlans] = useState<WorkoutPlan[]>([]);
+
   useEffect(() => {
-    const validateStorage = async () => {
-      await saveWorkoutPlans([workoutPlan]);
-      await saveSession(session);
-
+    const loadPlans = async () => {
       const storedPlans = await loadWorkoutPlans();
-      const storedSessions = await loadSessions();
-      const activeSession = await loadActiveSession();
-
-      // eslint-disable-next-line no-console
-      console.log('storage check', { storedPlans, storedSessions, activeSession });
+      setPlans(storedPlans);
     };
 
-    void validateStorage();
+    void loadPlans();
   }, []);
 
+  const confirmDelete = (plan: WorkoutPlan) => {
+    Alert.alert('Delete Plan', `Delete "${plan.name}"?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          const nextPlans = plans.filter((item) => item.id !== plan.id);
+          await saveWorkoutPlans(nextPlans);
+          setPlans(nextPlans);
+        },
+      },
+    ]);
+  };
+
   return (
-    <View style={styles.container}>
-      <Text>Plans</Text>
-    </View>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
+        <Text style={styles.title}>Plans</Text>
+        {plans.length === 0 ? (
+          <Text>No plans available.</Text>
+        ) : (
+          <View style={styles.section}>
+            {plans.map((plan) => (
+              <View key={plan.id} style={styles.row}>
+                <View style={styles.rowText}>
+                  <Text style={styles.planName}>{plan.name}</Text>
+                  {plan.gymType ? <Text style={styles.planMeta}>{plan.gymType}</Text> : null}
+                </View>
+                <Button title="Delete" onPress={() => confirmDelete(plan)} />
+              </View>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
+  },
+  container: {
+    padding: 16,
+    gap: 16,
+  },
+  title: {
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
+    opacity: 0.7,
+  },
+  section: {
+    gap: 12,
+  },
+  row: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  rowText: {
+    flex: 1,
+    gap: 4,
+  },
+  planName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  planMeta: {
+    fontSize: 13,
+    opacity: 0.7,
   },
 });
