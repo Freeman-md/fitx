@@ -3,12 +3,24 @@ import { Alert, Button, ScrollView, StyleSheet, Text, TextInput, View } from 're
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 
-import type { WorkoutDay, WorkoutPlan } from '@/data/models';
+import type { Block, WorkoutDay, WorkoutPlan } from '@/data/models';
 import { loadWorkoutPlans, saveWorkoutPlans } from '@/data/storage';
 
 type EditableDay = {
   id: string;
   name: string;
+};
+
+type EditableBlock = {
+  dayId: string;
+  id: string;
+  title: string;
+  durationMinutes: string;
+};
+
+type BlockDraft = {
+  title: string;
+  durationMinutes: string;
 };
 
 export default function PlanDetailScreen() {
@@ -18,6 +30,8 @@ export default function PlanDetailScreen() {
   const [plans, setPlans] = useState<WorkoutPlan[]>([]);
   const [newDayName, setNewDayName] = useState('');
   const [editingDay, setEditingDay] = useState<EditableDay | null>(null);
+  const [editingBlock, setEditingBlock] = useState<EditableBlock | null>(null);
+  const [blockDrafts, setBlockDrafts] = useState<Record<string, BlockDraft>>({});
 
   const loadPlan = useCallback(async () => {
     const storedPlans = await loadWorkoutPlans();
@@ -39,11 +53,31 @@ export default function PlanDetailScreen() {
     return [...plan.days].sort((a, b) => a.order - b.order);
   }, [plan]);
 
+  const getBlockDraft = (dayId: string): BlockDraft => {
+    return blockDrafts[dayId] ?? { title: '', durationMinutes: '' };
+  };
+
+  const updateBlockDraft = (dayId: string, nextDraft: BlockDraft) => {
+    setBlockDrafts((current) => ({ ...current, [dayId]: nextDraft }));
+  };
+
   const persistPlan = async (nextPlan: WorkoutPlan) => {
     const nextPlans = plans.map((item) => (item.id === nextPlan.id ? nextPlan : item));
     await saveWorkoutPlans(nextPlans);
     setPlans(nextPlans);
     setPlan(nextPlan);
+  };
+
+  const updateDay = async (dayId: string, updater: (day: WorkoutDay) => WorkoutDay) => {
+    if (!plan) {
+      return;
+    }
+    const nextPlan = {
+      ...plan,
+      days: plan.days.map((day) => (day.id === dayId ? updater(day) : day)),
+      updatedAt: new Date().toISOString(),
+    };
+    await persistPlan(nextPlan);
   };
 
   const handleAddDay = async () => {
@@ -117,6 +151,10 @@ export default function PlanDetailScreen() {
     return days.map((day, index) => ({ ...day, order: index + 1 }));
   };
 
+  const normalizeBlockOrder = (blocks: Block[]) => {
+    return blocks.map((block, index) => ({ ...block, order: index + 1 }));
+  };
+
   const moveDay = async (dayId: string, direction: 'up' | 'down') => {
     if (!plan) {
       return;
@@ -139,6 +177,104 @@ export default function PlanDetailScreen() {
       updatedAt: new Date().toISOString(),
     };
     await persistPlan(nextPlan);
+  };
+
+  const handleAddBlock = async (day: WorkoutDay) => {
+    const draft = getBlockDraft(day.id);
+    const title = draft.title.trim();
+    if (!title) {
+      Alert.alert('Block title required', 'Please enter a block title.');
+      return;
+    }
+    const duration = Number(draft.durationMinutes);
+    if (!Number.isFinite(duration) || duration <= 0) {
+      Alert.alert('Duration required', 'Please enter a valid duration in minutes.');
+      return;
+    }
+    const orderedBlocks = [...day.blocks].sort((a, b) => a.order - b.order);
+    const nextOrder =
+      orderedBlocks.length > 0 ? orderedBlocks[orderedBlocks.length - 1].order + 1 : 1;
+    const nextBlock: Block = {
+      id: `block-${Date.now()}`,
+      title,
+      durationMinutes: duration,
+      order: nextOrder,
+      exercises: [],
+    };
+    await updateDay(day.id, (currentDay) => ({
+      ...currentDay,
+      blocks: [...currentDay.blocks, nextBlock],
+    }));
+    updateBlockDraft(day.id, { title: '', durationMinutes: '' });
+  };
+
+  const handleStartEditBlock = (dayId: string, block: Block) => {
+    setEditingBlock({
+      dayId,
+      id: block.id,
+      title: block.title,
+      durationMinutes: String(block.durationMinutes),
+    });
+  };
+
+  const handleSaveBlockEdit = async () => {
+    if (!editingBlock) {
+      return;
+    }
+    const title = editingBlock.title.trim();
+    if (!title) {
+      Alert.alert('Block title required', 'Please enter a block title.');
+      return;
+    }
+    const duration = Number(editingBlock.durationMinutes);
+    if (!Number.isFinite(duration) || duration <= 0) {
+      Alert.alert('Duration required', 'Please enter a valid duration in minutes.');
+      return;
+    }
+    await updateDay(editingBlock.dayId, (day) => ({
+      ...day,
+      blocks: day.blocks.map((block) =>
+        block.id === editingBlock.id
+          ? { ...block, title, durationMinutes: duration }
+          : block
+      ),
+    }));
+    setEditingBlock(null);
+  };
+
+  const handleDeleteBlock = (dayId: string, block: Block) => {
+    Alert.alert('Delete Block', `Delete "${block.title}"?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          await updateDay(dayId, (day) => ({
+            ...day,
+            blocks: day.blocks.filter((item) => item.id !== block.id),
+          }));
+        },
+      },
+    ]);
+  };
+
+  const moveBlock = async (day: WorkoutDay, blockId: string, direction: 'up' | 'down') => {
+    const blocks = [...day.blocks].sort((a, b) => a.order - b.order);
+    const index = blocks.findIndex((block) => block.id === blockId);
+    if (index === -1) {
+      return;
+    }
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= blocks.length) {
+      return;
+    }
+    const nextBlocks = [...blocks];
+    [nextBlocks[index], nextBlocks[targetIndex]] = [nextBlocks[targetIndex], nextBlocks[index]];
+    const normalizedBlocks = normalizeBlockOrder(nextBlocks);
+    await updateDay(day.id, (currentDay) => ({
+      ...currentDay,
+      blocks: normalizedBlocks,
+    }));
   };
 
   if (!plan) {
@@ -203,6 +339,100 @@ export default function PlanDetailScreen() {
                     </View>
                   </>
                 )}
+                <View style={styles.section}>
+                  <Text style={styles.blockTitle}>Blocks</Text>
+                  <TextInput
+                    placeholder="Block title"
+                    value={getBlockDraft(day.id).title}
+                    onChangeText={(value) =>
+                      updateBlockDraft(day.id, {
+                        ...getBlockDraft(day.id),
+                        title: value,
+                      })
+                    }
+                    style={styles.input}
+                  />
+                  <TextInput
+                    placeholder="Duration minutes"
+                    value={getBlockDraft(day.id).durationMinutes}
+                    onChangeText={(value) =>
+                      updateBlockDraft(day.id, {
+                        ...getBlockDraft(day.id),
+                        durationMinutes: value,
+                      })
+                    }
+                    keyboardType="number-pad"
+                    style={styles.input}
+                  />
+                  <Button title="Add Block" onPress={() => void handleAddBlock(day)} />
+                  {day.blocks.length === 0 ? (
+                    <Text>No blocks yet.</Text>
+                  ) : (
+                    [...day.blocks]
+                      .sort((a, b) => a.order - b.order)
+                      .map((block) => (
+                        <View key={block.id} style={styles.blockCard}>
+                          {editingBlock?.id === block.id &&
+                          editingBlock.dayId === day.id ? (
+                            <>
+                              <TextInput
+                                value={editingBlock.title}
+                                onChangeText={(value) =>
+                                  setEditingBlock({
+                                    ...editingBlock,
+                                    title: value,
+                                  })
+                                }
+                                style={styles.input}
+                              />
+                              <TextInput
+                                value={editingBlock.durationMinutes}
+                                onChangeText={(value) =>
+                                  setEditingBlock({
+                                    ...editingBlock,
+                                    durationMinutes: value,
+                                  })
+                                }
+                                keyboardType="number-pad"
+                                style={styles.input}
+                              />
+                              <View style={styles.row}>
+                                <Button title="Cancel" onPress={() => setEditingBlock(null)} />
+                                <Button title="Save" onPress={() => void handleSaveBlockEdit()} />
+                              </View>
+                            </>
+                          ) : (
+                            <>
+                              <View style={styles.row}>
+                                <Text style={styles.blockName}>{block.title}</Text>
+                                <Text style={styles.blockMeta}>
+                                  {block.durationMinutes}m · #{block.order}
+                                </Text>
+                              </View>
+                              <View style={styles.row}>
+                                <Button
+                                  title="Up"
+                                  onPress={() => void moveBlock(day, block.id, 'up')}
+                                />
+                                <Button
+                                  title="Down"
+                                  onPress={() => void moveBlock(day, block.id, 'down')}
+                                />
+                                <Button
+                                  title="Edit"
+                                  onPress={() => handleStartEditBlock(day.id, block)}
+                                />
+                                <Button
+                                  title="Delete"
+                                  onPress={() => handleDeleteBlock(day.id, block)}
+                                />
+                              </View>
+                            </>
+                          )}
+                        </View>
+                      ))
+                  )}
+                </View>
               </View>
             ))
           )}
@@ -252,6 +482,25 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   dayOrder: {
+    fontSize: 12,
+    opacity: 0.7,
+  },
+  blockTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  blockCard: {
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 10,
+    padding: 12,
+    gap: 12,
+  },
+  blockName: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  blockMeta: {
     fontSize: 12,
     opacity: 0.7,
   },
