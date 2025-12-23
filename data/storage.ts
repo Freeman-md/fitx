@@ -13,8 +13,22 @@ type RestState = {
   endsAt: string;
 };
 
-export async function saveWorkoutPlans(plans: WorkoutPlan[]): Promise<void> {
-  await AsyncStorage.setItem(WORKOUT_PLANS_KEY, JSON.stringify(plans));
+export async function saveWorkoutPlans(
+  plans: WorkoutPlan[],
+  options: { allowEmpty: boolean } = { allowEmpty: true }
+): Promise<void> {
+  if (!Array.isArray(plans)) {
+    throw new Error('Workout plans must be saved as an array.');
+  }
+
+  if (!options.allowEmpty && plans.length === 0) {
+    throw new Error('Refusing to save an empty workout plan list.');
+  }
+
+  // Write a detached copy to prevent shared references leaking into storage.
+  const safeCopy = JSON.stringify(JSON.parse(JSON.stringify(plans)));
+
+  await AsyncStorage.setItem(WORKOUT_PLANS_KEY, safeCopy);
 }
 
 export async function loadWorkoutPlans(): Promise<WorkoutPlan[]> {
@@ -22,7 +36,12 @@ export async function loadWorkoutPlans(): Promise<WorkoutPlan[]> {
   if (!stored) {
     return [];
   }
-  return JSON.parse(stored) as WorkoutPlan[];
+  try {
+    const parsed = JSON.parse(stored) as unknown;
+    return Array.isArray(parsed) ? (parsed as WorkoutPlan[]) : [];
+  } catch (error) {
+    return [];
+  }
 }
 
 export async function saveSession(session: Session): Promise<void> {

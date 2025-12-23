@@ -1,7 +1,7 @@
 // Plan mental model (locked):
-// - A plan fully owns its days, and days/blocks/exercises are not shared across plans.
-// - Sessions reference plans and days by ID only.
-// - Editing a plan must never mutate existing or past sessions.
-// - Sessions are immutable historical records once completed.
-// - Plans can be active or archived; only one plan is active at any time.
-// - Archived plans cannot be selected for new sessions.
+// - A plan is a reusable template used to start sessions.
+// - Plans fully own their days, blocks, and exercises.
+// - Sessions snapshot execution state at creation time.
+// - Sessions reference plans by ID for display only.
+// - Editing or deleting a plan must not break sessions.
+// - The only active state in the system is the active session.
