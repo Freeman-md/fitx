@@ -5,20 +5,25 @@ export const workoutPlan: WorkoutPlan = {
   id: 'plan-001',
   name: 'Strength + Conditioning',
   gymType: 'Full Gym',
+  createdAt: '2025-02-01T08:00:00.000Z',
+  updatedAt: '2025-02-05T08:00:00.000Z',
   days: [
     {
       id: 'day-001',
       name: 'Lower Body + Core',
+      order: 1,
       blocks: [
         {
           id: 'block-001',
           title: 'Warmup',
+          order: 1,
           durationMinutes: 10,
           exercises: [
             {
               id: 'ex-001',
               name: 'Rowing Machine',
               sets: 1,
+              order: 1,
               timeSeconds: 600,
               restSeconds: 0,
               notes: 'Easy pace, nasal breathing.',
@@ -28,12 +33,14 @@ export const workoutPlan: WorkoutPlan = {
         {
           id: 'block-002',
           title: 'Strength',
+          order: 2,
           durationMinutes: 35,
           exercises: [
             {
               id: 'ex-002',
               name: 'Back Squat',
               sets: 4,
+              order: 1,
               repsMin: 5,
               repsMax: 8,
               restSeconds: 150,
@@ -43,6 +50,7 @@ export const workoutPlan: WorkoutPlan = {
               id: 'ex-003',
               name: 'Romanian Deadlift',
               sets: 3,
+              order: 2,
               repsMin: 8,
               repsMax: 10,
               restSeconds: 120,
@@ -51,6 +59,7 @@ export const workoutPlan: WorkoutPlan = {
               id: 'ex-004',
               name: 'Walking Lunges',
               sets: 3,
+              order: 3,
               repsMin: 10,
               repsMax: 12,
               restSeconds: 90,
@@ -60,12 +69,14 @@ export const workoutPlan: WorkoutPlan = {
         {
           id: 'block-003',
           title: 'Core Finisher',
+          order: 3,
           durationMinutes: 12,
           exercises: [
             {
               id: 'ex-005',
               name: 'Plank Hold',
               sets: 3,
+              order: 1,
               timeSeconds: 45,
               restSeconds: 45,
             },
@@ -73,6 +84,7 @@ export const workoutPlan: WorkoutPlan = {
               id: 'ex-006',
               name: 'Hanging Knee Raises',
               sets: 3,
+              order: 2,
               repsMin: 8,
               repsMax: 12,
               restSeconds: 60,
