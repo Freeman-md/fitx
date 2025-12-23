@@ -1,21 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Alert, Button, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect, useRouter } from 'expo-router';
 
 import type { WorkoutPlan } from '@/data/models';
 import { loadWorkoutPlans, saveWorkoutPlans } from '@/data/storage';
 
 export default function PlansScreen() {
+  const router = useRouter();
   const [plans, setPlans] = useState<WorkoutPlan[]>([]);
 
-  useEffect(() => {
-    const loadPlans = async () => {
-      const storedPlans = await loadWorkoutPlans();
-      setPlans(storedPlans);
-    };
-
-    void loadPlans();
+  const loadPlans = useCallback(async () => {
+    const storedPlans = await loadWorkoutPlans();
+    setPlans(storedPlans);
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadPlans();
+    }, [loadPlans])
+  );
 
   const confirmDelete = (plan: WorkoutPlan) => {
     Alert.alert('Delete Plan', `Delete "${plan.name}"?`, [
@@ -36,6 +40,7 @@ export default function PlansScreen() {
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
         <Text style={styles.title}>Plans</Text>
+        <Button title="New Plan" onPress={() => router.push('/plans/create')} />
         {plans.length === 0 ? (
           <Text>No plans available.</Text>
         ) : (
