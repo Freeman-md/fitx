@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Alert, Button, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Button, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 
@@ -47,10 +47,12 @@ export default function PlansScreen() {
           <View style={styles.section}>
             {plans.map((plan) => (
               <View key={plan.id} style={styles.row}>
-                <View style={styles.rowText}>
+                <Pressable
+                  style={styles.rowText}
+                  onPress={() => router.push(`/plans/${plan.id}`)}>
                   <Text style={styles.planName}>{plan.name}</Text>
                   {plan.gymType ? <Text style={styles.planMeta}>{plan.gymType}</Text> : null}
-                </View>
+                </Pressable>
                 <Button title="Delete" onPress={() => confirmDelete(plan)} />
               </View>
             ))}
