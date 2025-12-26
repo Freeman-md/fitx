@@ -1,7 +1,7 @@
-import { StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import type { WorkoutDay } from '@/data/models';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { PrimaryText, SecondaryText } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
@@ -10,90 +10,110 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 
 type DayCardProps = {
   day: WorkoutDay;
-  isEditing: boolean;
-  editingName: string;
-  onChangeName: (value: string) => void;
-  onCancelEdit: () => void;
-  onSaveEdit: () => void;
   onMoveUp: () => void;
   onMoveDown: () => void;
   onOpenBlocks: () => void;
-  onStartEdit: () => void;
-  onDelete: () => void;
+  onEdit: () => void;
 };
 
-export function DayCard({
-  day,
-  isEditing,
-  editingName,
-  onChangeName,
-  onCancelEdit,
-  onSaveEdit,
-  onMoveUp,
-  onMoveDown,
-  onOpenBlocks,
-  onStartEdit,
-  onDelete,
-}: DayCardProps) {
+export function DayCard({ day, onMoveUp, onMoveDown, onOpenBlocks, onEdit }: DayCardProps) {
   const colorScheme = useColorScheme();
-  const borderColor = colorScheme === 'dark' ? '#374151' : '#e5e7eb';
-  const textColor = colorScheme === 'dark' ? Colors.dark.text : Colors.light.text;
+  const iconColor = colorScheme === 'dark' ? Colors.dark.icon : Colors.light.icon;
 
   return (
-    <Card style={styles.card}>
-      {isEditing ? (
-        <>
-          <SecondaryText>Day name</SecondaryText>
-          <TextInput
-            value={editingName}
-            onChangeText={onChangeName}
-            style={[styles.input, { borderColor, color: textColor }]}
-          />
-          <View style={styles.row}>
-            <Button label="Cancel" variant="secondary" size="compact" onPress={onCancelEdit} />
-            <Button label="Save" size="compact" onPress={onSaveEdit} />
+    <Pressable
+      accessibilityRole="button"
+      onPress={onOpenBlocks}
+      style={({ pressed }) => [styles.pressable, pressed && styles.pressed]}>
+      <Card style={styles.card}>
+        <View style={styles.header}>
+          <View style={styles.info}>
+            <PrimaryText style={styles.title}>{day.name}</PrimaryText>
+            <SecondaryText style={styles.meta}>{`Day ${day.order}`}</SecondaryText>
           </View>
-        </>
-      ) : (
-        <>
-          <View style={styles.row}>
-            <PrimaryText style={styles.cardTitle}>{day.name}</PrimaryText>
-            <SecondaryText style={styles.cardMeta}>#{day.order}</SecondaryText>
-          </View>
-          <View style={styles.row}>
-            <Button label="Up" variant="secondary" size="compact" onPress={onMoveUp} />
-            <Button label="Down" variant="secondary" size="compact" onPress={onMoveDown} />
-            <Button label="Blocks" variant="secondary" size="compact" onPress={onOpenBlocks} />
-            <Button label="Rename" variant="secondary" size="compact" onPress={onStartEdit} />
-            <Button label="Delete" variant="destructive" size="compact" onPress={onDelete} />
-          </View>
-        </>
-      )}
-    </Card>
+          <MaterialIcons name="chevron-right" size={22} color={iconColor} />
+        </View>
+        <View style={styles.actionsRow}>
+          <MaterialIcons name="drag-handle" size={18} color={iconColor} />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Move day up"
+            onPress={(event) => {
+              event.stopPropagation();
+              onMoveUp();
+            }}
+            style={({ pressed }) => [styles.iconButton, pressed && styles.iconPressed]}>
+            <MaterialIcons name="keyboard-arrow-up" size={20} color={iconColor} />
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Move day down"
+            onPress={(event) => {
+              event.stopPropagation();
+              onMoveDown();
+            }}
+            style={({ pressed }) => [styles.iconButton, pressed && styles.iconPressed]}>
+            <MaterialIcons name="keyboard-arrow-down" size={20} color={iconColor} />
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Edit day"
+            onPress={(event) => {
+              event.stopPropagation();
+              onEdit();
+            }}
+            style={({ pressed }) => [styles.iconButton, pressed && styles.iconPressed]}>
+            <MaterialIcons name="more-vert" size={20} color={iconColor} />
+          </Pressable>
+        </View>
+      </Card>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    gap: Spacing.sm,
+  pressable: {
+    borderRadius: 16,
   },
-  row: {
+  pressed: {
+    opacity: 0.92,
+  },
+  card: {
+    borderWidth: 0,
+    borderRadius: 16,
+    paddingVertical: Spacing.md,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
+  },
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     gap: Spacing.sm,
   },
-  cardTitle: {
+  info: {
+    flex: 1,
+    gap: Spacing.xs,
+  },
+  title: {
     fontWeight: '600',
   },
-  cardMeta: {
-    opacity: 0.7,
+  meta: {
+    opacity: 0.75,
   },
-  input: {
-    borderWidth: 1,
-    borderRadius: 8,
-    minHeight: 44,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
+  actionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: Spacing.xs,
+  },
+  iconButton: {
+    padding: Spacing.xs,
+    borderRadius: 12,
+  },
+  iconPressed: {
+    opacity: 0.7,
   },
 });

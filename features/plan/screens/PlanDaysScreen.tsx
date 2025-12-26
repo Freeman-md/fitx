@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 
 import { BottomSheet } from '@/components/ui/bottom-sheet';
@@ -8,6 +8,7 @@ import { Spacing } from '@/components/ui/spacing';
 import { DayForm } from '@/features/plan/components/DayForm';
 import { PlanDaysView } from '@/features/plan/components/PlanDaysView';
 import { usePlanDaysScreen } from '@/features/plan/hooks/use-plan-days-screen';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function PlanDaysScreen() {
   const router = useRouter();
@@ -27,6 +28,8 @@ export default function PlanDaysScreen() {
     cancelDayEdit,
   } = usePlanDaysScreen(planId);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const colorScheme = useColorScheme();
+  const destructiveColor = colorScheme === 'dark' ? '#f87171' : '#dc2626';
 
   const closeAddDaySheet = () => {
     setIsAddOpen(false);
@@ -44,7 +47,7 @@ export default function PlanDaysScreen() {
     <>
       <Stack.Screen
         options={{
-          title: plan?.name ? `Plan: ${plan.name}` : 'Plan',
+          title: 'Plan Details',
           headerBackTitle: 'Back',
           headerBackTitleVisible: true,
         }}
@@ -53,16 +56,11 @@ export default function PlanDaysScreen() {
         planName={plan?.name}
         gymType={plan?.gymType}
         days={orderedDays}
-        editingDay={editingDay}
         onAddDay={() => setIsAddOpen(true)}
-        onChangeEditingName={setEditingName}
-        onCancelEdit={cancelDayEdit}
-        onSaveEdit={() => void saveDayName()}
         onMoveDayUp={(dayId) => void moveDay(dayId, 'up')}
         onMoveDayDown={(dayId) => void moveDay(dayId, 'down')}
         onOpenBlocks={(dayId) => router.push(`/plans/${planId}/days/${dayId}`)}
-        onStartEdit={beginDayEdit}
-        onDeleteDay={confirmDeleteDay}
+        onEditDay={beginDayEdit}
         onBack={() => router.back()}
         isMissing={!plan}
       />
@@ -83,6 +81,36 @@ export default function PlanDaysScreen() {
         }>
         <DayForm name={newDayName} onChangeName={setNewDayName} />
       </BottomSheet>
+      <BottomSheet
+        visible={Boolean(editingDay)}
+        title="Edit Day"
+        onDismiss={cancelDayEdit}
+        footer={
+          <View style={styles.footer}>
+            <Button label="Save" onPress={() => void saveDayName()} style={styles.fullWidth} />
+            <Button
+              label="Cancel"
+              variant="secondary"
+              onPress={cancelDayEdit}
+              style={styles.fullWidth}
+            />
+          </View>
+        }>
+        {editingDay ? (
+          <View style={styles.editSection}>
+            <DayForm name={editingDay.name} onChangeName={setEditingName} />
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                confirmDeleteDay(editingDay.id, editingDay.name);
+                cancelDayEdit();
+              }}
+              style={styles.deleteButton}>
+              <Text style={[styles.deleteText, { color: destructiveColor }]}>Delete day</Text>
+            </Pressable>
+          </View>
+        ) : null}
+      </BottomSheet>
     </>
   );
 }
@@ -93,5 +121,15 @@ const styles = StyleSheet.create({
   },
   fullWidth: {
     width: '100%',
+  },
+  editSection: {
+    gap: Spacing.md,
+  },
+  deleteButton: {
+    paddingVertical: Spacing.xs,
+  },
+  deleteText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

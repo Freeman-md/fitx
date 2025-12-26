@@ -2,11 +2,10 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { WorkoutDay } from '@/data/models';
-import type { DayEdit } from '@/features/plan/hooks/use-plan-days';
 import { DayCard } from '@/features/plan/components/DayCard';
 import { Button } from '@/components/ui/button';
 import { Fab } from '@/components/ui/fab';
-import { PageTitle, SecondaryText } from '@/components/ui/text';
+import { PageTitle, SecondaryText, SectionTitle } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
 
 type PlanDaysViewProps = {
@@ -17,12 +16,7 @@ type PlanDaysViewProps = {
   onMoveDayUp: (dayId: string) => void;
   onMoveDayDown: (dayId: string) => void;
   onOpenBlocks: (dayId: string) => void;
-  editingDay: DayEdit | null;
-  onChangeEditingName: (value: string) => void;
-  onCancelEdit: () => void;
-  onSaveEdit: () => void;
-  onStartEdit: (dayId: string, dayName: string) => void;
-  onDeleteDay: (dayId: string, dayName: string) => void;
+  onEditDay: (dayId: string, dayName: string) => void;
   onBack: () => void;
   isMissing: boolean;
 };
@@ -35,12 +29,7 @@ export function PlanDaysView({
   onMoveDayUp,
   onMoveDayDown,
   onOpenBlocks,
-  editingDay,
-  onChangeEditingName,
-  onCancelEdit,
-  onSaveEdit,
-  onStartEdit,
-  onDeleteDay,
+  onEditDay,
   onBack,
   isMissing,
 }: PlanDaysViewProps) {
@@ -59,8 +48,14 @@ export function PlanDaysView({
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.screen}>
         <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
-          <PageTitle>{planName}</PageTitle>
-          {gymType ? <SecondaryText style={styles.subtitle}>{gymType}</SecondaryText> : null}
+          <View style={styles.context}>
+            <PageTitle style={styles.planName}>{planName}</PageTitle>
+            {gymType ? <SecondaryText style={styles.subtitle}>{gymType}</SecondaryText> : null}
+          </View>
+          <View style={styles.section}>
+            <SectionTitle>Days</SectionTitle>
+            <SecondaryText>Tap a day to edit its blocks.</SecondaryText>
+          </View>
           <View style={styles.section}>
             {days.length === 0 ? (
               <SecondaryText style={styles.centeredText}>No days yet.</SecondaryText>
@@ -69,16 +64,10 @@ export function PlanDaysView({
                 <DayCard
                   key={day.id}
                   day={day}
-                  isEditing={editingDay?.id === day.id}
-                  editingName={editingDay?.id === day.id ? editingDay.name : day.name}
-                  onChangeName={onChangeEditingName}
-                  onCancelEdit={onCancelEdit}
-                  onSaveEdit={onSaveEdit}
                   onMoveUp={() => onMoveDayUp(day.id)}
                   onMoveDown={() => onMoveDayDown(day.id)}
                   onOpenBlocks={() => onOpenBlocks(day.id)}
-                  onStartEdit={() => onStartEdit(day.id, day.name)}
-                  onDelete={() => onDeleteDay(day.id, day.name)}
+                  onEdit={() => onEditDay(day.id, day.name)}
                 />
               ))
             )}
@@ -102,11 +91,18 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     paddingBottom: Spacing.xxl,
   },
+  context: {
+    gap: Spacing.xs,
+  },
+  planName: {
+    textAlign: 'left',
+    opacity: 1,
+  },
   section: {
     gap: Spacing.sm,
   },
   subtitle: {
-    textAlign: 'center',
+    opacity: 0.75,
   },
   centeredText: {
     textAlign: 'center',
