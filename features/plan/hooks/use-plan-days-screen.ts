@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Alert } from 'react-native';
 
 import { usePlanDays, type DayEdit } from '@/features/plan/hooks/use-plan-days';
-import { getRequiredNameAlert } from '@/features/plan/utils/validation';
 
 export function usePlanDaysScreen(planId: string | undefined) {
   const { plan, orderedDays, addDay, renameDay, deleteDay, moveDay } = usePlanDays(planId);
@@ -10,9 +9,7 @@ export function usePlanDaysScreen(planId: string | undefined) {
   const [editingDay, setEditingDay] = useState<DayEdit | null>(null);
 
   const addDayWithValidation = async () => {
-    const error = getRequiredNameAlert('Day name', newDayName);
-    if (error) {
-      Alert.alert(error.title, error.message);
+    if (!newDayName.trim()) {
       return false;
     }
     const added = await addDay(newDayName.trim());
@@ -26,9 +23,7 @@ export function usePlanDaysScreen(planId: string | undefined) {
     if (!editingDay) {
       return;
     }
-    const error = getRequiredNameAlert('Day name', editingDay.name);
-    if (error) {
-      Alert.alert(error.title, error.message);
+    if (!editingDay.name.trim()) {
       return;
     }
     await renameDay({ id: editingDay.id, name: editingDay.name.trim() });

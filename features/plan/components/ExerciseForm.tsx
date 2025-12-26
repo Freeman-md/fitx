@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Spacing } from '@/components/ui/spacing';
-import { SecondaryText } from '@/components/ui/text';
+import { FormField } from '@/components/ui/form-field';
+import { SliderField } from '@/components/ui/slider-field';
 
 type ExerciseFormProps = {
   name: string;
@@ -23,6 +24,13 @@ type ExerciseFormProps = {
   onChangeTimeSeconds: (value: string) => void;
   onChangeRestSeconds: (value: string) => void;
   onChangeNotes: (value: string) => void;
+  onBlurName?: () => void;
+  nameError?: string;
+  setsError?: string;
+  repsMinError?: string;
+  repsMaxError?: string;
+  timeError?: string;
+  restError?: string;
 };
 
 export function ExerciseForm({
@@ -42,33 +50,51 @@ export function ExerciseForm({
   onChangeTimeSeconds,
   onChangeRestSeconds,
   onChangeNotes,
+  onBlurName,
+  nameError,
+  setsError,
+  repsMinError,
+  repsMaxError,
+  timeError,
+  restError,
 }: ExerciseFormProps) {
   const colorScheme = useColorScheme();
   const borderColor = colorScheme === 'dark' ? '#374151' : '#e5e7eb';
+  const errorBorderColor = colorScheme === 'dark' ? '#f87171' : '#dc2626';
   const textColor = colorScheme === 'dark' ? Colors.dark.text : Colors.light.text;
   const placeholderColor = colorScheme === 'dark' ? Colors.dark.icon : Colors.light.icon;
   const inputStyle = [styles.input, { borderColor, color: textColor }];
+  const setsValue = Math.min(10, Math.max(1, Number(sets || 1)));
+  const repsMinValue = Math.min(20, Math.max(1, Number(repsMin || 1)));
+  const repsMaxValue = Math.min(20, Math.max(1, Number(repsMax || 1)));
+  const restValue = Math.min(180, Math.max(0, Number(restSeconds || 0)));
 
   return (
     <View style={styles.section}>
-      <SecondaryText>Exercise name</SecondaryText>
-      <TextInput
-        placeholder="Exercise name"
-        placeholderTextColor={placeholderColor}
-        value={name}
-        onChangeText={onChangeName}
-        style={inputStyle}
+      <FormField label="Exercise name" error={nameError}>
+        <TextInput
+          placeholder="Exercise name"
+          placeholderTextColor={placeholderColor}
+          value={name}
+          onChangeText={onChangeName}
+          onBlur={onBlurName}
+          style={[
+            inputStyle,
+            nameError ? { borderColor: errorBorderColor } : null,
+          ]}
+        />
+      </FormField>
+      <SliderField
+        label="Sets"
+        value={setsValue}
+        min={1}
+        max={10}
+        step={1}
+        onChange={(value) => onChangeSets(String(value))}
+        valueLabel={sets ? `${sets} sets` : 'Select sets'}
+        error={setsError}
       />
-      <SecondaryText>Sets</SecondaryText>
-      <TextInput
-        placeholder="Sets"
-        placeholderTextColor={placeholderColor}
-        value={sets}
-        onChangeText={onChangeSets}
-        keyboardType="number-pad"
-        style={inputStyle}
-      />
-      <SecondaryText>Target type</SecondaryText>
+      <FormField label="Target type">
       <View style={styles.modeRow}>
         <Button
           label="Reps"
@@ -83,57 +109,64 @@ export function ExerciseForm({
           onPress={() => onChangeMode('time')}
         />
       </View>
+      </FormField>
       {mode === 'reps' ? (
         <>
-          <SecondaryText>Reps min</SecondaryText>
-          <TextInput
-            placeholder="Reps min"
-            placeholderTextColor={placeholderColor}
-            value={repsMin}
-            onChangeText={onChangeRepsMin}
-            keyboardType="number-pad"
-            style={inputStyle}
+          <SliderField
+            label="Reps min"
+            value={repsMinValue}
+            min={1}
+            max={20}
+            step={1}
+            onChange={(value) => onChangeRepsMin(String(value))}
+            valueLabel={repsMin ? `${repsMin} reps` : 'Select min'}
+            error={repsMinError}
           />
-          <SecondaryText>Reps max</SecondaryText>
-          <TextInput
-            placeholder="Reps max"
-            placeholderTextColor={placeholderColor}
-            value={repsMax}
-            onChangeText={onChangeRepsMax}
-            keyboardType="number-pad"
-            style={inputStyle}
+          <SliderField
+            label="Reps max"
+            value={repsMaxValue}
+            min={1}
+            max={20}
+            step={1}
+            onChange={(value) => onChangeRepsMax(String(value))}
+            valueLabel={repsMax ? `${repsMax} reps` : 'Select max'}
+            error={repsMaxError}
           />
         </>
       ) : (
-        <>
-          <SecondaryText>Time seconds</SecondaryText>
+        <FormField label="Time seconds" error={timeError} helper="Used for timed exercises">
           <TextInput
             placeholder="Time (seconds)"
             placeholderTextColor={placeholderColor}
             value={timeSeconds}
             onChangeText={onChangeTimeSeconds}
             keyboardType="number-pad"
-            style={inputStyle}
+            style={[
+              inputStyle,
+              timeError ? { borderColor: errorBorderColor } : null,
+            ]}
           />
-        </>
+        </FormField>
       )}
-      <SecondaryText>Rest seconds</SecondaryText>
-      <TextInput
-        placeholder="Rest (seconds)"
-        placeholderTextColor={placeholderColor}
-        value={restSeconds}
-        onChangeText={onChangeRestSeconds}
-        keyboardType="number-pad"
-        style={inputStyle}
+      <SliderField
+        label="Rest seconds"
+        value={restValue}
+        min={0}
+        max={180}
+        step={15}
+        onChange={(value) => onChangeRestSeconds(String(value))}
+        valueLabel={restSeconds ? `${restSeconds} sec rest` : 'Select rest'}
+        error={restError}
       />
-      <SecondaryText>Notes</SecondaryText>
-      <TextInput
-        placeholder="Notes"
-        placeholderTextColor={placeholderColor}
-        value={notes}
-        onChangeText={onChangeNotes}
-        style={inputStyle}
-      />
+      <FormField label="Notes">
+        <TextInput
+          placeholder="Notes"
+          placeholderTextColor={placeholderColor}
+          value={notes}
+          onChangeText={onChangeNotes}
+          style={inputStyle}
+        />
+      </FormField>
     </View>
   );
 }

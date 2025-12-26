@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { Alert } from 'react-native';
 
 import type { Exercise } from '@/data/models';
 import { useBlockExercises } from '@/features/plan/hooks/use-block-exercises';
@@ -42,7 +41,6 @@ export function useBlockExercisesScreen(
       return false;
     }
     if (!hasPerformanceTarget(exerciseDraft)) {
-      Alert.alert('Exercise needs reps or time', 'Add reps or time to save this exercise.');
       return false;
     }
     const nextExercise = buildExerciseFromDraft(exerciseDraft, nextExerciseOrder);
@@ -60,7 +58,6 @@ export function useBlockExercisesScreen(
       return;
     }
     if (!hasPerformanceTarget(exerciseBeingEdited)) {
-      Alert.alert('Exercise needs reps or time', 'Add reps or time to save this exercise.');
       return;
     }
     await editExercise(exerciseBeingEdited.id, (exercise) =>

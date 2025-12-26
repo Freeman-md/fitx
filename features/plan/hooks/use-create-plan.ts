@@ -1,18 +1,14 @@
 import { useState } from 'react';
-import { Alert } from 'react-native';
 
 import { loadWorkoutPlans, saveWorkoutPlans } from '@/data/storage';
 import { buildNewPlan } from '@/features/plan/utils/plan-builders';
-import { getRequiredNameAlert } from '@/features/plan/utils/validation';
 
 export function useCreatePlan() {
   const [nameInput, setNameInput] = useState('');
   const [gymTypeInput, setGymTypeInput] = useState('');
 
   const savePlan = async () => {
-    const nameError = getRequiredNameAlert('Plan name', nameInput);
-    if (nameError) {
-      Alert.alert(nameError.title, nameError.message);
+    if (nameInput.trim().length < 2) {
       return false;
     }
 

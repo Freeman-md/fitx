@@ -1,14 +1,16 @@
 import { StyleSheet, TextInput, View } from 'react-native';
 
+import { FormField } from '@/components/ui/form-field';
 import { Spacing } from '@/components/ui/spacing';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { SecondaryText } from '@/components/ui/text';
 type CreatePlanViewProps = {
   nameInput: string;
   gymTypeInput: string;
   onChangeName: (value: string) => void;
   onChangeGymType: (value: string) => void;
+  onBlurName?: () => void;
+  nameError?: string;
 };
 
 export function CreatePlanView({
@@ -16,31 +18,40 @@ export function CreatePlanView({
   gymTypeInput,
   onChangeName,
   onChangeGymType,
+  onBlurName,
+  nameError,
 }: CreatePlanViewProps) {
   const colorScheme = useColorScheme();
   const borderColor = colorScheme === 'dark' ? '#374151' : '#e5e7eb';
+  const errorBorderColor = colorScheme === 'dark' ? '#f87171' : '#dc2626';
   const textColor = colorScheme === 'dark' ? Colors.dark.text : Colors.light.text;
   const placeholderColor = colorScheme === 'dark' ? Colors.dark.icon : Colors.light.icon;
   const inputStyle = [styles.input, { borderColor, color: textColor }];
 
   return (
     <View style={styles.section}>
-      <SecondaryText>Plan name</SecondaryText>
-      <TextInput
-        placeholder="Plan name"
-        placeholderTextColor={placeholderColor}
-        value={nameInput}
-        onChangeText={onChangeName}
-        style={inputStyle}
-      />
-      <SecondaryText>Gym type</SecondaryText>
-      <TextInput
-        placeholder="Gym type (optional)"
-        placeholderTextColor={placeholderColor}
-        value={gymTypeInput}
-        onChangeText={onChangeGymType}
-        style={inputStyle}
-      />
+      <FormField label="Plan name" error={nameError}>
+        <TextInput
+          placeholder="Plan name"
+          placeholderTextColor={placeholderColor}
+          value={nameInput}
+          onChangeText={onChangeName}
+          onBlur={onBlurName}
+          style={[
+            inputStyle,
+            nameError ? { borderColor: errorBorderColor } : null,
+          ]}
+        />
+      </FormField>
+      <FormField label="Gym type">
+        <TextInput
+          placeholder="Gym type (optional)"
+          placeholderTextColor={placeholderColor}
+          value={gymTypeInput}
+          onChangeText={onChangeGymType}
+          style={inputStyle}
+        />
+      </FormField>
     </View>
   );
 }

@@ -1,10 +1,8 @@
-import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useState } from 'react';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 
 import { BottomSheet } from '@/components/ui/bottom-sheet';
-import { Button } from '@/components/ui/button';
-import { Spacing } from '@/components/ui/spacing';
+import { FormFooter } from '@/components/ui/form-footer';
 import { BlockForm } from '@/features/plan/components/BlockForm';
 import { DayBlocksView } from '@/features/plan/components/DayBlocksView';
 import { useDayBlocksScreen } from '@/features/plan/hooks/use-day-blocks-screen';
@@ -31,14 +29,36 @@ export default function DayBlocksScreen() {
     addBlockWithValidation,
   } = useDayBlocksScreen(planId, dayId);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [titleTouched, setTitleTouched] = useState(false);
+  const [editTitleTouched, setEditTitleTouched] = useState(false);
+
+  useEffect(() => {
+    if (editingBlock) {
+      setEditTitleTouched(false);
+    }
+  }, [editingBlock]);
+
+  const trimmedTitle = draftTitle.trim();
+  const titleError =
+    titleTouched && trimmedTitle.length === 0 ? 'Block title is required.' : '';
+  const isAddValid = trimmedTitle.length > 0;
+
+  const trimmedEditTitle = editingBlock?.title.trim() ?? '';
+  const editTitleError =
+    editTitleTouched && trimmedEditTitle.length === 0 ? 'Block title is required.' : '';
+  const isEditValid = trimmedEditTitle.length > 0;
 
   const closeAddBlockSheet = () => {
     setIsAddOpen(false);
     setDraftTitle('');
-    setDraftDuration('');
+    setDraftDuration(30);
+    setTitleTouched(false);
   };
 
   const handleAddBlock = async () => {
+    if (!isAddValid) {
+      return;
+    }
     const added = await addBlockWithValidation();
     if (added) {
       closeAddBlockSheet();
@@ -73,20 +93,25 @@ export default function DayBlocksScreen() {
         title="Add Block"
         onDismiss={closeAddBlockSheet}
         footer={
-          <View style={styles.footer}>
-            <Button label="Save" onPress={() => void handleAddBlock()} style={styles.fullWidth} />
-            <Button
-              label="Cancel"
-              variant="secondary"
-              onPress={closeAddBlockSheet}
-              style={styles.fullWidth}
-            />
-          </View>
+          <FormFooter
+            primaryLabel="Save"
+            secondaryLabel="Cancel"
+            onPrimary={() => void handleAddBlock()}
+            onSecondary={closeAddBlockSheet}
+            primaryDisabled={!isAddValid}
+          />
         }>
         <BlockForm
           title={draftTitle}
           durationMinutes={draftDuration}
-          onChangeTitle={setDraftTitle}
+          onChangeTitle={(value) => {
+            setDraftTitle(value);
+            if (!titleTouched) {
+              setTitleTouched(true);
+            }
+          }}
+          onBlurTitle={() => setTitleTouched(true)}
+          titleError={titleError}
           onChangeDuration={setDraftDuration}
         />
       </BottomSheet>
@@ -95,21 +120,26 @@ export default function DayBlocksScreen() {
         title="Edit Block"
         onDismiss={cancelBlockEdit}
         footer={
-          <View style={styles.footer}>
-            <Button label="Save" onPress={() => void saveBlockEdit()} style={styles.fullWidth} />
-            <Button
-              label="Cancel"
-              variant="secondary"
-              onPress={cancelBlockEdit}
-              style={styles.fullWidth}
-            />
-          </View>
+          <FormFooter
+            primaryLabel="Save"
+            secondaryLabel="Cancel"
+            onPrimary={() => void saveBlockEdit()}
+            onSecondary={cancelBlockEdit}
+            primaryDisabled={!isEditValid}
+          />
         }>
         {editingBlock ? (
           <BlockForm
             title={editingBlock.title}
             durationMinutes={editingBlock.durationMinutes}
-            onChangeTitle={setEditingTitle}
+            onChangeTitle={(value) => {
+              setEditingTitle(value);
+              if (!editTitleTouched) {
+                setEditTitleTouched(true);
+              }
+            }}
+            onBlurTitle={() => setEditTitleTouched(true)}
+            titleError={editTitleError}
             onChangeDuration={setEditingDuration}
           />
         ) : null}
@@ -117,12 +147,3 @@ export default function DayBlocksScreen() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  footer: {
-    gap: Spacing.sm,
-  },
-  fullWidth: {
-    width: '100%',
-  },
-});

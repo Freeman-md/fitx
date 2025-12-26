@@ -1,14 +1,11 @@
-import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 
 import { BottomSheet } from '@/components/ui/bottom-sheet';
-import { Button } from '@/components/ui/button';
-import { Spacing } from '@/components/ui/spacing';
+import { FormFooter } from '@/components/ui/form-footer';
 import { DayForm } from '@/features/plan/components/DayForm';
 import { PlanDaysView } from '@/features/plan/components/PlanDaysView';
 import { usePlanDaysScreen } from '@/features/plan/hooks/use-plan-days-screen';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function PlanDaysScreen() {
   const router = useRouter();
@@ -28,14 +25,35 @@ export default function PlanDaysScreen() {
     cancelDayEdit,
   } = usePlanDaysScreen(planId);
   const [isAddOpen, setIsAddOpen] = useState(false);
-  useColorScheme();
+  const [newDayTouched, setNewDayTouched] = useState(false);
+  const [editDayTouched, setEditDayTouched] = useState(false);
+
+  useEffect(() => {
+    if (editingDay) {
+      setEditDayTouched(false);
+    }
+  }, [editingDay]);
+
+  const trimmedNewDay = newDayName.trim();
+  const newDayError =
+    newDayTouched && trimmedNewDay.length === 0 ? 'Day name is required.' : '';
+  const isAddDayValid = trimmedNewDay.length > 0;
+
+  const trimmedEditDay = editingDay?.name.trim() ?? '';
+  const editDayError =
+    editDayTouched && trimmedEditDay.length === 0 ? 'Day name is required.' : '';
+  const isEditDayValid = trimmedEditDay.length > 0;
 
   const closeAddDaySheet = () => {
     setIsAddOpen(false);
     setNewDayName('');
+    setNewDayTouched(false);
   };
 
   const handleAddDay = async () => {
+    if (!isAddDayValid) {
+      return;
+    }
     const added = await addDayWithValidation();
     if (added) {
       closeAddDaySheet();
@@ -69,51 +87,53 @@ export default function PlanDaysScreen() {
         title="Add Day"
         onDismiss={closeAddDaySheet}
         footer={
-          <View style={styles.footer}>
-            <Button label="Save" onPress={() => void handleAddDay()} style={styles.fullWidth} />
-            <Button
-              label="Cancel"
-              variant="secondary"
-              onPress={closeAddDaySheet}
-              style={styles.fullWidth}
-            />
-          </View>
+          <FormFooter
+            primaryLabel="Save"
+            secondaryLabel="Cancel"
+            onPrimary={() => void handleAddDay()}
+            onSecondary={closeAddDaySheet}
+            primaryDisabled={!isAddDayValid}
+          />
         }>
-        <DayForm name={newDayName} onChangeName={setNewDayName} />
+        <DayForm
+          name={newDayName}
+          onChangeName={(value) => {
+            setNewDayName(value);
+            if (!newDayTouched) {
+              setNewDayTouched(true);
+            }
+          }}
+          onBlurName={() => setNewDayTouched(true)}
+          error={newDayError}
+        />
       </BottomSheet>
       <BottomSheet
         visible={Boolean(editingDay)}
         title="Edit Day"
         onDismiss={cancelDayEdit}
         footer={
-          <View style={styles.footer}>
-            <Button label="Save" onPress={() => void saveDayName()} style={styles.fullWidth} />
-            <Button
-              label="Cancel"
-              variant="secondary"
-              onPress={cancelDayEdit}
-              style={styles.fullWidth}
-            />
-          </View>
+          <FormFooter
+            primaryLabel="Save"
+            secondaryLabel="Cancel"
+            onPrimary={() => void saveDayName()}
+            onSecondary={cancelDayEdit}
+            primaryDisabled={!isEditDayValid}
+          />
         }>
         {editingDay ? (
-          <View style={styles.editSection}>
-            <DayForm name={editingDay.name} onChangeName={setEditingName} />
-          </View>
+          <DayForm
+            name={editingDay.name}
+            onChangeName={(value) => {
+              setEditingName(value);
+              if (!editDayTouched) {
+                setEditDayTouched(true);
+              }
+            }}
+            onBlurName={() => setEditDayTouched(true)}
+            error={editDayError}
+          />
         ) : null}
       </BottomSheet>
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  footer: {
-    gap: Spacing.sm,
-  },
-  fullWidth: {
-    width: '100%',
-  },
-  editSection: {
-    gap: Spacing.md,
-  },
-});
