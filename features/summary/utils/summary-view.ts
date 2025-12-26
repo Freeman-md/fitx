@@ -5,7 +5,25 @@ export type SummaryViewModel = {
   dayName: string;
   startedAt: string;
   endedAt: string;
-  exerciseNames: string[];
+  durationLabel: string;
+  recapItems: SummaryRecapItem[];
+};
+
+export type SummaryRecapItem = {
+  id: string;
+  name: string;
+  completedSets: number;
+  skippedSets: number;
+  totalSets: number;
+};
+
+const formatDuration = (startedAt: string, endedAt: string) => {
+  const durationMs = Date.parse(endedAt) - Date.parse(startedAt);
+  if (Number.isNaN(durationMs) || durationMs <= 0) {
+    return 'Unknown duration';
+  }
+  const totalMinutes = Math.round(durationMs / 60000);
+  return `${totalMinutes} min`;
 };
 
 export const buildSummaryViewModel = (
@@ -22,27 +40,44 @@ export const buildSummaryViewModel = (
     }
   }
 
-  const completedExerciseIds = new Set<string>();
+  const recapByExercise = new Map<string, SummaryRecapItem>();
+  const recapOrder: string[] = [];
   for (const block of session.blocks) {
     for (const exercise of block.exercises) {
-      if (exercise.sets.some((set) => set.completed)) {
-        completedExerciseIds.add(exercise.exerciseId);
+      const completedSets = exercise.sets.filter((set) => set.completed).length;
+      const skippedSets = exercise.sets.filter((set) => !set.completed).length;
+      const totalSets = exercise.sets.length;
+      const name = exerciseNameById.get(exercise.exerciseId) ?? 'Unknown exercise';
+      const existing = recapByExercise.get(exercise.exerciseId);
+      if (existing) {
+        recapByExercise.set(exercise.exerciseId, {
+          ...existing,
+          completedSets: existing.completedSets + completedSets,
+          skippedSets: existing.skippedSets + skippedSets,
+          totalSets: existing.totalSets + totalSets,
+        });
+      } else {
+        recapByExercise.set(exercise.exerciseId, {
+          id: exercise.exerciseId,
+          name,
+          completedSets,
+          skippedSets,
+          totalSets,
+        });
+        recapOrder.push(exercise.exerciseId);
       }
     }
   }
-
-  const completedExerciseNames = Array.from(completedExerciseIds)
-    .map((id) => exerciseNameById.get(id))
-    .filter((name): name is string => Boolean(name));
 
   return {
     planName: plan?.name ?? 'Unknown',
     dayName: day?.name ?? 'Unknown',
     startedAt: session.startedAt,
     endedAt: session.endedAt ?? 'In progress',
-    exerciseNames:
-      completedExerciseNames.length > 0
-        ? completedExerciseNames
-        : ['No completed exercises'],
+    durationLabel:
+      session.endedAt ? formatDuration(session.startedAt, session.endedAt) : 'In progress',
+    recapItems: recapOrder
+      .map((id) => recapByExercise.get(id))
+      .filter(Boolean) as SummaryRecapItem[],
   };
 };
