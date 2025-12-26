@@ -100,6 +100,30 @@ export default function TrainScreen() {
     ]);
   };
 
+  const canStartSession = (dayId: string) => {
+    if (!selectedPlan) {
+      return { ok: false, reason: 'No plan selected.' };
+    }
+    const day = selectedPlan.days.find((item) => item.id === dayId);
+    if (!day) {
+      return { ok: false, reason: 'Selected day not found.' };
+    }
+    if (day.blocks.length === 0) {
+      return { ok: false, reason: 'Add at least one block before starting a session.' };
+    }
+    const emptyBlock = day.blocks.find((block) => block.exercises.length === 0);
+    if (emptyBlock) {
+      return { ok: false, reason: 'Each block must have at least one exercise.' };
+    }
+    const invalidExercise = day.blocks.flatMap((block) => block.exercises).find((exercise) => {
+      return !exercise.repsMin && !exercise.repsMax && !exercise.timeSeconds;
+    });
+    if (invalidExercise) {
+      return { ok: false, reason: 'Each exercise needs reps or time to start a session.' };
+    }
+    return { ok: true };
+  };
+
   const renderActionButton = (
     label: string,
     onPress: () => void | Promise<void>,
@@ -218,21 +242,32 @@ export default function TrainScreen() {
           {selectedPlan ? (
             <View style={styles.section}>
               <SectionTitle>{selectedPlan.name} Days</SectionTitle>
-              {selectedPlan.days.map((day) => (
-                <View
-                  key={day.id}
-                  style={[
-                    styles.itemCard,
-                    colorScheme === 'dark' ? { borderColor: colors.border } : null,
-                  ]}>
-                  <RowText>{day.name}</RowText>
-                  {renderActionButton(
-                    'Start Session',
-                    () => void startSessionForDay(selectedPlan.id, day.id),
-                    'primary'
-                  )}
-                </View>
-              ))}
+              {selectedPlan.days.length === 0 ? (
+                <StatusText>Add at least one day to start a session.</StatusText>
+              ) : (
+                selectedPlan.days.map((day) => (
+                  <View
+                    key={day.id}
+                    style={[
+                      styles.itemCard,
+                      colorScheme === 'dark' ? { borderColor: colors.border } : null,
+                    ]}>
+                    <RowText>{day.name}</RowText>
+                    {renderActionButton(
+                      'Start Session',
+                      () => {
+                        const check = canStartSession(day.id);
+                        if (!check.ok) {
+                          Alert.alert('Cannot start session', check.reason);
+                          return;
+                        }
+                        void startSessionForDay(selectedPlan.id, day.id);
+                      },
+                      'primary'
+                    )}
+                  </View>
+                ))
+              )}
             </View>
           ) : null}
         </>

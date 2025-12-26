@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Button, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
@@ -41,8 +41,16 @@ export default function BlockExercisesScreen() {
     return orderedExercises.length > 0 ? orderedExercises[orderedExercises.length - 1].order + 1 : 1;
   }, [orderedExercises]);
 
+  const hasPerformanceTarget = (draft: ExerciseDraft) => {
+    return Boolean(draft.repsMin || draft.repsMax || draft.timeSeconds);
+  };
+
   const handleAddExercise = async () => {
     if (!currentBlock) {
+      return;
+    }
+    if (!hasPerformanceTarget(draft)) {
+      Alert.alert('Exercise needs reps or time', 'Add reps or time to save this exercise.');
       return;
     }
     const nextExercise = buildExerciseFromDraft(draft, nextOrder);
@@ -56,6 +64,10 @@ export default function BlockExercisesScreen() {
 
   const handleSaveEdit = async () => {
     if (!editingExercise) {
+      return;
+    }
+    if (!hasPerformanceTarget(editingExercise)) {
+      Alert.alert('Exercise needs reps or time', 'Add reps or time to save this exercise.');
       return;
     }
     await editExercise(editingExercise.id, (exercise) =>

@@ -53,6 +53,16 @@ export default function HistoryScreen() {
     return sessionPlan.days.find((day) => day.id === selectedSession.workoutDayId) ?? null;
   }, [sessionPlan, selectedSession]);
 
+  const blockTitleLookup = useMemo(() => {
+    const titles = new Map<string, string>();
+    if (sessionDay) {
+      for (const block of sessionDay.blocks) {
+        titles.set(block.id, block.title);
+      }
+    }
+    return titles;
+  }, [sessionDay]);
+
   const exerciseNameLookup = useMemo(() => {
     const names = new Map<string, string>();
     if (sessionDay) {
@@ -134,15 +144,17 @@ export default function HistoryScreen() {
         <View style={styles.section}>
           <RowText>Started: {selectedSession.startedAt}</RowText>
           <RowText>Ended: {selectedSession.endedAt}</RowText>
-          <RowText>Plan: {sessionPlan?.name ?? 'Unknown'}</RowText>
-          <RowText>Day: {sessionDay?.name ?? 'Unknown'}</RowText>
+          <RowText>Plan: {sessionPlan?.name ?? 'Deleted plan'}</RowText>
+          <RowText>Day: {sessionDay?.name ?? 'Deleted day'}</RowText>
           {selectedSession.blocks.map((block) => (
             <View key={block.blockId} style={styles.section}>
-              <SectionTitle>Block {block.blockId}</SectionTitle>
+              <SectionTitle>
+                {blockTitleLookup.get(block.blockId) ?? 'Deleted block'}
+              </SectionTitle>
               {block.exercises.map((exercise) => (
                 <View key={exercise.exerciseId} style={styles.section}>
                   <RowText>
-                    {exerciseNameLookup.get(exercise.exerciseId) ?? exercise.exerciseId}
+                    {exerciseNameLookup.get(exercise.exerciseId) ?? 'Unknown exercise'}
                   </RowText>
                   {formatSets(exercise, sessionDay).map((line) => (
                     <DetailText key={line}>{line}</DetailText>
