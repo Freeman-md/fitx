@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
 import { clearRestState, loadRestState, saveRestState } from '@/data/storage';
+import { getRestSecondsRemaining } from '@/features/session/utils/rest-timer';
 
 type UseRestTimerOptions = {
   sessionId: string | null;
@@ -14,7 +15,7 @@ export function useRestTimer({ sessionId }: UseRestTimerOptions) {
   const appStateRef = useRef(AppState.currentState);
 
   const updateRestRemaining = (endsAt: string) => {
-    const remaining = Math.max(0, Math.ceil((Date.parse(endsAt) - Date.now()) / 1000));
+    const remaining = getRestSecondsRemaining(endsAt);
     setRestSecondsRemaining(remaining);
     return remaining;
   };

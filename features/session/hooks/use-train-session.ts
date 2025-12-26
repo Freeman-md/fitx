@@ -2,14 +2,17 @@ import { useEffect, useMemo, useState } from 'react';
 
 import type { Session, SessionStatus as SessionStatusType, WorkoutPlan } from '@/data/models';
 import { SessionStatus } from '@/data/models';
-import { getCurrentExerciseInfo, type CurrentExerciseInfo } from '@/data/session-info';
+import { getCurrentExerciseInfo, type CurrentExerciseInfo } from '@/features/session/utils/session-info';
 import { startSession } from '@/data/session';
-import { useRestTimer } from '@/hooks/use-rest-timer';
+import { useRestTimer } from '@/features/session/hooks/use-rest-timer';
+import { buildEndedSession, buildSessionAfterSetAction } from '@/features/session/utils/session-actions';
 import {
-  findNextIncompleteSet,
-  isSessionComplete,
-  updateSessionSet,
-} from '@/data/session-runner';
+  selectActiveDay,
+  selectActivePlan,
+  selectActivePosition,
+  selectDayById,
+  selectPlanById,
+} from '@/features/session/utils/session-selectors';
 import {
   loadActiveSession,
   loadWorkoutPlans,
@@ -45,30 +48,24 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
   }, []);
 
   const selectedPlan = useMemo(
-    () => plans.find((plan) => plan.id === selectedPlanId) ?? null,
+    () => selectPlanById(plans, selectedPlanId),
     [plans, selectedPlanId]
   );
 
-  const activePlan = useMemo(() => {
-    if (!activeSession) {
-      return null;
-    }
-    return plans.find((plan) => plan.id === activeSession.workoutPlanId) ?? null;
-  }, [activeSession, plans]);
+  const activePlan = useMemo(
+    () => selectActivePlan(plans, activeSession),
+    [plans, activeSession]
+  );
 
-  const activeDay = useMemo(() => {
-    if (!activePlan || !activeSession) {
-      return null;
-    }
-    return activePlan.days.find((day) => day.id === activeSession.workoutDayId) ?? null;
-  }, [activePlan, activeSession]);
+  const activeDay = useMemo(
+    () => selectActiveDay(activePlan, activeSession),
+    [activePlan, activeSession]
+  );
 
-  const activePosition = useMemo(() => {
-    if (!activeSession || activeSession.status !== SessionStatus.Active) {
-      return null;
-    }
-    return findNextIncompleteSet(activeSession);
-  }, [activeSession]);
+  const activePosition = useMemo(
+    () => selectActivePosition(activeSession),
+    [activeSession]
+  );
 
   const currentExerciseInfo = useMemo<CurrentExerciseInfo | null>(() => {
     if (!activeSession || !activeDay || !activePosition) {
@@ -78,8 +75,8 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
   }, [activeDay, activePosition, activeSession]);
 
   const startSessionForDay = async (planId: string, dayId: string) => {
-    const plan = plans.find((item) => item.id === planId);
-    const day = plan?.days.find((item) => item.id === dayId);
+    const plan = selectPlanById(plans, planId);
+    const day = selectDayById(plan, dayId);
     if (!plan || !day) {
       return;
     }
@@ -97,17 +94,14 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
     const completedAt = new Date().toISOString();
     const actualRepsValue = actualRepsInput ? Number(actualRepsInput) : undefined;
     const actualTimeValue = actualTimeInput ? Number(actualTimeInput) : undefined;
-    const updatedSession = updateSessionSet(activeSession, activePosition, (set) => ({
-      ...set,
-      completed: markCompleted,
+    const nextSession = buildSessionAfterSetAction({
+      session: activeSession,
+      position: activePosition,
+      markCompleted,
       completedAt,
-      actualReps: markCompleted ? actualRepsValue ?? set.targetReps : undefined,
-      actualTimeSeconds: markCompleted ? actualTimeValue ?? set.targetTimeSeconds : undefined,
-    }));
-
-    const nextSession = isSessionComplete(updatedSession)
-      ? { ...updatedSession, status: SessionStatus.Completed, endedAt: completedAt }
-      : updatedSession;
+      actualReps: actualRepsValue,
+      actualTimeSeconds: actualTimeValue,
+    });
 
     await saveSession(nextSession);
     if (nextSession.status === SessionStatus.Completed) {
@@ -142,11 +136,7 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
     }
 
     const endedAt = new Date().toISOString();
-    const nextSession: Session = {
-      ...activeSession,
-      status,
-      endedAt,
-    };
+    const nextSession = buildEndedSession(activeSession, status, endedAt);
     await saveSession(nextSession);
     if (status === SessionStatus.Completed) {
       await saveLastCompletedSessionId(nextSession.id);

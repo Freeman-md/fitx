@@ -3,6 +3,7 @@ import { useFocusEffect } from 'expo-router';
 
 import type { Block, WorkoutDay, WorkoutPlan } from '@/data/models';
 import { loadWorkoutPlans, saveWorkoutPlans } from '@/data/storage';
+import { getNextOrder, normalizeOrder, sortByOrder } from '@/features/plan/utils/order';
 
 type MoveDirection = 'up' | 'down';
 
@@ -34,7 +35,7 @@ export function useDayBlocks(planId: string | undefined, dayId: string | undefin
     if (!currentDay) {
       return [];
     }
-    return [...currentDay.blocks].sort((a, b) => a.order - b.order);
+    return sortByOrder(currentDay.blocks);
   }, [currentDay]);
 
   const persistPlan = async (nextPlan: WorkoutPlan) => {
@@ -55,16 +56,11 @@ export function useDayBlocks(planId: string | undefined, dayId: string | undefin
     await persistPlan(nextPlan);
   };
 
-  const normalizeBlockOrder = (blocks: Block[]) => {
-    return blocks.map((block, index) => ({ ...block, order: index + 1 }));
-  };
-
   const addBlock = async (title: string, durationMinutes: number) => {
     if (!currentDay) {
       return false;
     }
-    const nextOrder =
-      orderedBlocks.length > 0 ? orderedBlocks[orderedBlocks.length - 1].order + 1 : 1;
+    const nextOrder = getNextOrder(orderedBlocks);
     const nextBlock: Block = {
       id: `block-${Date.now()}`,
       title,
@@ -103,7 +99,7 @@ export function useDayBlocks(planId: string | undefined, dayId: string | undefin
       return;
     }
     [blocks[index], blocks[targetIndex]] = [blocks[targetIndex], blocks[index]];
-    const normalizedBlocks = normalizeBlockOrder(blocks);
+    const normalizedBlocks = normalizeOrder(blocks);
     await updateDay((day) => ({ ...day, blocks: normalizedBlocks }));
   };
 

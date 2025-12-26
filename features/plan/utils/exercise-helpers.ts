@@ -67,3 +67,7 @@ export const applyDraftToExercise = (exercise: Exercise, draft: ExerciseDraft): 
     notes: draft.notes.trim() || undefined,
   };
 };
+
+export const hasPerformanceTarget = (draft: ExerciseDraft) => {
+  return Boolean(draft.repsMin || draft.repsMax || draft.timeSeconds);
+};

@@ -1,5 +1,5 @@
-import type { Session, WorkoutDay } from './models';
-import { getSessionBlock, getSessionExercise, type SessionPosition } from './session-runner';
+import type { Session, WorkoutDay } from '@/data/models';
+import { getSessionBlock, getSessionExercise, type SessionPosition } from '@/data/session-runner';
 
 export type CurrentExerciseInfo = {
   name: string;

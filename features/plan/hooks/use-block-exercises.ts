@@ -3,6 +3,7 @@ import { useFocusEffect } from 'expo-router';
 
 import type { Exercise, WorkoutPlan } from '@/data/models';
 import { loadWorkoutPlans, saveWorkoutPlans } from '@/data/storage';
+import { normalizeOrder, sortByOrder } from '@/features/plan/utils/order';
 
 type MoveDirection = 'up' | 'down';
 
@@ -43,7 +44,7 @@ export function useBlockExercises(
     if (!currentBlock) {
       return [];
     }
-    return [...currentBlock.exercises].sort((a, b) => a.order - b.order);
+    return sortByOrder(currentBlock.exercises);
   }, [currentBlock]);
 
   const persistPlan = async (nextPlan: WorkoutPlan) => {
@@ -72,10 +73,6 @@ export function useBlockExercises(
     await persistPlan(nextPlan);
   };
 
-  const normalizeExerciseOrder = (exercises: Exercise[]) => {
-    return exercises.map((exercise, index) => ({ ...exercise, order: index + 1 }));
-  };
-
   const addExercise = async (exercise: Exercise) => {
     await updateBlock((exercises) => [...exercises, exercise]);
   };
@@ -101,7 +98,7 @@ export function useBlockExercises(
       return;
     }
     [list[index], list[targetIndex]] = [list[targetIndex], list[index]];
-    const nextExercises = normalizeExerciseOrder(list);
+    const nextExercises = normalizeOrder(list);
     await updateBlock(() => nextExercises);
   };
 

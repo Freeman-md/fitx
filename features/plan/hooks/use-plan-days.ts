@@ -3,6 +3,7 @@ import { useFocusEffect } from 'expo-router';
 
 import type { WorkoutDay, WorkoutPlan } from '@/data/models';
 import { loadWorkoutPlans, saveWorkoutPlans } from '@/data/storage';
+import { getNextOrder, normalizeOrder, sortByOrder } from '@/features/plan/utils/order';
 
 export type DayEdit = {
   id: string;
@@ -32,7 +33,7 @@ export function usePlanDays(planId: string | undefined) {
     if (!plan) {
       return [];
     }
-    return [...plan.days].sort((a, b) => a.order - b.order);
+    return sortByOrder(plan.days);
   }, [plan]);
 
   const persistPlan = async (nextPlan: WorkoutPlan) => {
@@ -58,7 +59,7 @@ export function usePlanDays(planId: string | undefined) {
     if (!plan) {
       return false;
     }
-    const nextOrder = orderedDays.length > 0 ? orderedDays[orderedDays.length - 1].order + 1 : 1;
+    const nextOrder = getNextOrder(orderedDays);
     const nextDay: WorkoutDay = {
       id: `day-${Date.now()}`,
       name,
@@ -91,10 +92,6 @@ export function usePlanDays(planId: string | undefined) {
     await persistPlan(nextPlan);
   };
 
-  const normalizeDayOrder = (days: WorkoutDay[]) => {
-    return days.map((day, index) => ({ ...day, order: index + 1 }));
-  };
-
   const moveDay = async (dayId: string, direction: MoveDirection) => {
     if (!plan) {
       return;
@@ -110,7 +107,7 @@ export function usePlanDays(planId: string | undefined) {
     }
     const nextDays = [...days];
     [nextDays[index], nextDays[targetIndex]] = [nextDays[targetIndex], nextDays[index]];
-    const normalizedDays = normalizeDayOrder(nextDays);
+    const normalizedDays = normalizeOrder(nextDays);
     const nextPlan = {
       ...plan,
       days: normalizedDays,
