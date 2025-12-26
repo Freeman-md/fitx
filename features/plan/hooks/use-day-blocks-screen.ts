@@ -13,7 +13,7 @@ export function useDayBlocksScreen(planId: string | undefined, dayId: string | u
   const { currentPlan, currentDay, orderedBlocks, addBlock, editBlock, deleteBlock, moveBlock } =
     useDayBlocks(planId, dayId);
   const [draftTitle, setDraftTitle] = useState('');
-  const [draftDuration, setDraftDuration] = useState(30);
+  const [draftDuration, setDraftDuration] = useState(5);
   const [editingBlock, setEditingBlock] = useState<EditableBlock | null>(null);
 
   const addBlockWithValidation = async () => {
@@ -23,7 +23,7 @@ export function useDayBlocksScreen(planId: string | undefined, dayId: string | u
     const added = await addBlock(draftTitle.trim(), draftDuration);
     if (added) {
       setDraftTitle('');
-      setDraftDuration(30);
+      setDraftDuration(5);
     }
     return added;
   };

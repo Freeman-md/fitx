@@ -51,7 +51,7 @@ export default function DayBlocksScreen() {
   const closeAddBlockSheet = () => {
     setIsAddOpen(false);
     setDraftTitle('');
-    setDraftDuration(30);
+    setDraftDuration(5);
     setTitleTouched(false);
   };
 

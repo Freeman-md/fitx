@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { PanResponder, StyleSheet, View } from 'react-native';
 
 import { FormField } from '@/components/ui/form-field';
@@ -32,6 +32,8 @@ export function SliderField({
   helper,
 }: SliderFieldProps) {
   const [trackWidth, setTrackWidth] = useState(0);
+  const [trackX, setTrackX] = useState(0);
+  const trackRef = useRef<View>(null);
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const trackColor = isDark ? '#1f2937' : '#e5e7eb';
@@ -42,7 +44,8 @@ export function SliderField({
   const percent = (safeValue - min) / (max - min || 1);
   const thumbSize = 18;
   const thumbOffset = trackWidth * clamp(percent, 0, 1);
-  const thumbLeft = Math.max(0, clamp(thumbOffset, 0, trackWidth) - thumbSize / 2);
+  const maxThumbLeft = Math.max(0, trackWidth - thumbSize);
+  const thumbLeft = clamp(thumbOffset - thumbSize / 2, 0, maxThumbLeft);
 
   const handleChange = useCallback(
     (positionX: number) => {
@@ -56,9 +59,12 @@ export function SliderField({
         min,
         max
       );
+      if (steppedValue === value) {
+        return;
+      }
       onChange(steppedValue);
     },
-    [trackWidth, min, max, step, onChange]
+    [trackWidth, min, max, step, onChange, value]
   );
 
   const panResponder = useMemo(
@@ -67,21 +73,27 @@ export function SliderField({
         onStartShouldSetPanResponder: () => true,
         onMoveShouldSetPanResponder: () => true,
         onPanResponderGrant: (event) => {
-          handleChange(event.nativeEvent.locationX);
+          handleChange(event.nativeEvent.pageX - trackX);
         },
-        onPanResponderMove: (event) => {
-          handleChange(event.nativeEvent.locationX);
+        onPanResponderMove: (_event, gestureState) => {
+          handleChange(gestureState.moveX - trackX);
         },
       }),
-    [handleChange]
+    [handleChange, trackX]
   );
 
   return (
     <FormField label={label} error={error} helper={helper}>
       <View style={styles.sliderRow}>
         <View
+          ref={trackRef}
           style={[styles.track, { backgroundColor: trackColor }]}
-          onLayout={(event) => setTrackWidth(event.nativeEvent.layout.width)}
+          onLayout={(event) => {
+            setTrackWidth(event.nativeEvent.layout.width);
+            trackRef.current?.measure((_x, _y, _w, _h, pageX) => {
+              setTrackX(pageX);
+            });
+          }}
           {...panResponder.panHandlers}>
           <View
             style={[
