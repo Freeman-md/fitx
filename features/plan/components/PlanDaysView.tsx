@@ -47,7 +47,7 @@ export function PlanDaysView({
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <View style={styles.screen}>
         <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
           <View style={styles.context}>
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   },
   container: {
     paddingHorizontal: Spacing.md,
-    paddingTop: 0,
+    paddingTop: Spacing.md,
     paddingBottom: Spacing.xxl,
     gap: Spacing.md,
   },
