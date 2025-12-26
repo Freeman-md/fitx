@@ -47,7 +47,7 @@ export async function loadWorkoutPlans(): Promise<WorkoutPlan[]> {
 export async function saveSession(session: Session): Promise<void> {
   const sessions = await loadSessions();
   const existing = sessions.find((item) => item.id === session.id);
-  if (existing?.status === SessionStatus.Completed) {
+  if (existing?.status === SessionStatus.Completed || existing?.status === SessionStatus.Abandoned) {
     return;
   }
   const next = sessions.filter((item) => item.id !== session.id);
@@ -83,15 +83,17 @@ export async function ensureSingleActiveSession(): Promise<Session | null> {
 
 export async function saveSessions(sessions: Session[]): Promise<void> {
   const stored = await loadSessions();
-  const completedById = new Map(
-    stored.filter((session) => session.status === SessionStatus.Completed).map((session) => [
-      session.id,
-      session,
-    ])
+  const immutableById = new Map(
+    stored
+      .filter(
+        (session) =>
+          session.status === SessionStatus.Completed || session.status === SessionStatus.Abandoned
+      )
+      .map((session) => [session.id, session])
   );
-  const merged = sessions.map((session) => completedById.get(session.id) ?? session);
+  const merged = sessions.map((session) => immutableById.get(session.id) ?? session);
   const mergedIds = new Set(merged.map((session) => session.id));
-  for (const session of completedById.values()) {
+  for (const session of immutableById.values()) {
     if (!mergedIds.has(session.id)) {
       merged.push(session);
     }
