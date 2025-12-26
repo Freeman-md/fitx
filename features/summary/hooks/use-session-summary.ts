@@ -11,7 +11,7 @@ export function useSessionSummary() {
   const isDark = colorScheme === 'dark';
 
   useEffect(() => {
-    const loadSummary = async () => {
+    const loadSummaryData = async () => {
       const sessionId = await loadLastCompletedSessionId();
       if (!sessionId) {
         return;
@@ -25,7 +25,7 @@ export function useSessionSummary() {
       setSummary(buildSummaryViewModel(session, plan, day));
     };
 
-    void loadSummary();
+    void loadSummaryData();
   }, []);
 
   return { summary, isDark };

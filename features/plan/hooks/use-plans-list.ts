@@ -8,15 +8,15 @@ import { loadWorkoutPlans, saveWorkoutPlans } from '@/data/storage';
 export function usePlansList() {
   const [plans, setPlans] = useState<WorkoutPlan[]>([]);
 
-  const loadPlans = useCallback(async () => {
+  const loadPlansFromStorage = useCallback(async () => {
     const storedPlans = await loadWorkoutPlans();
     setPlans(storedPlans);
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      void loadPlans();
-    }, [loadPlans])
+      void loadPlansFromStorage();
+    }, [loadPlansFromStorage])
   );
 
   const requestDeletePlan = (plan: WorkoutPlan) => {

@@ -15,13 +15,13 @@ export default function DayBlocksScreen() {
     editingBlock,
     setDraftTitle,
     setDraftDuration,
-    handleAddBlock,
-    handleSaveEdit,
-    handleDeleteBlock,
-    startEditingBlock,
-    handleEditingTitleChange,
-    handleEditingDurationChange,
-    cancelEdit,
+    addBlockWithValidation,
+    saveBlockEdit,
+    confirmDeleteBlock,
+    beginBlockEdit,
+    setEditingTitle,
+    setEditingDuration,
+    cancelBlockEdit,
     moveBlock,
   } = useDayBlocksScreen(planId, dayId);
 
@@ -35,18 +35,18 @@ export default function DayBlocksScreen() {
       editingBlock={editingBlock}
       onChangeDraftTitle={setDraftTitle}
       onChangeDraftDuration={setDraftDuration}
-      onAddBlock={() => void handleAddBlock()}
-      onCancelEdit={cancelEdit}
-      onSaveEdit={() => void handleSaveEdit()}
-      onStartEdit={startEditingBlock}
-      onChangeEditingTitle={handleEditingTitleChange}
-      onChangeEditingDuration={handleEditingDurationChange}
+      onAddBlock={() => void addBlockWithValidation()}
+      onCancelEdit={cancelBlockEdit}
+      onSaveEdit={() => void saveBlockEdit()}
+      onStartEdit={beginBlockEdit}
+      onChangeEditingTitle={setEditingTitle}
+      onChangeEditingDuration={setEditingDuration}
       onMoveUp={(blockId) => void moveBlock(blockId, 'up')}
       onMoveDown={(blockId) => void moveBlock(blockId, 'down')}
       onShowExercises={(blockId) =>
         router.push(`/plans/${planId}/days/${dayId}/blocks/${blockId}`)
       }
-      onDeleteBlock={handleDeleteBlock}
+      onDeleteBlock={confirmDeleteBlock}
       onBack={() => router.back()}
     />
   );

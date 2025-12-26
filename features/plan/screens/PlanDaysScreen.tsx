@@ -12,13 +12,13 @@ export default function PlanDaysScreen() {
     newDayName,
     setNewDayName,
     editingDay,
-    startEditingDay,
-    handleEditingNameChange,
-    handleAddDay,
-    handleRenameDay,
-    handleDeleteDay,
+    beginDayEdit,
+    setEditingName,
+    addDayWithValidation,
+    saveDayName,
+    confirmDeleteDay,
     moveDay,
-    cancelEdit,
+    cancelDayEdit,
   } = usePlanDaysScreen(planId);
 
   return (
@@ -29,15 +29,15 @@ export default function PlanDaysScreen() {
       editingDay={editingDay}
       newDayName={newDayName}
       onChangeNewDayName={setNewDayName}
-      onAddDay={() => void handleAddDay()}
-      onChangeEditingName={handleEditingNameChange}
-      onCancelEdit={cancelEdit}
-      onSaveEdit={() => void handleRenameDay()}
+      onAddDay={() => void addDayWithValidation()}
+      onChangeEditingName={setEditingName}
+      onCancelEdit={cancelDayEdit}
+      onSaveEdit={() => void saveDayName()}
       onMoveDayUp={(dayId) => void moveDay(dayId, 'up')}
       onMoveDayDown={(dayId) => void moveDay(dayId, 'down')}
       onOpenBlocks={(dayId) => router.push(`/plans/${planId}/days/${dayId}`)}
-      onStartEdit={startEditingDay}
-      onDeleteDay={handleDeleteDay}
+      onStartEdit={beginDayEdit}
+      onDeleteDay={confirmDeleteDay}
       onBack={() => router.back()}
       isMissing={!plan}
     />

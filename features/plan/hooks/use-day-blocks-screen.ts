@@ -18,7 +18,7 @@ export function useDayBlocksScreen(planId: string | undefined, dayId: string | u
   const [draftDuration, setDraftDuration] = useState('');
   const [editingBlock, setEditingBlock] = useState<EditableBlock | null>(null);
 
-  const handleAddBlock = async () => {
+  const addBlockWithValidation = async () => {
     const titleError = getRequiredNameAlert('Block title', draftTitle);
     if (titleError) {
       Alert.alert(titleError.title, titleError.message);
@@ -37,7 +37,7 @@ export function useDayBlocksScreen(planId: string | undefined, dayId: string | u
     }
   };
 
-  const handleSaveEdit = async () => {
+  const saveBlockEdit = async () => {
     if (!editingBlock) {
       return;
     }
@@ -56,7 +56,7 @@ export function useDayBlocksScreen(planId: string | undefined, dayId: string | u
     setEditingBlock(null);
   };
 
-  const handleDeleteBlock = (blockId: string, blockTitle: string) => {
+  const confirmDeleteBlock = (blockId: string, blockTitle: string) => {
     Alert.alert('Delete Block', `Delete "${blockTitle}"?`, [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -69,7 +69,7 @@ export function useDayBlocksScreen(planId: string | undefined, dayId: string | u
     ]);
   };
 
-  const startEditingBlock = (block: Block) => {
+  const beginBlockEdit = (block: Block) => {
     setEditingBlock({
       id: block.id,
       title: block.title,
@@ -77,11 +77,11 @@ export function useDayBlocksScreen(planId: string | undefined, dayId: string | u
     });
   };
 
-  const handleEditingTitleChange = (value: string) => {
+  const setEditingTitle = (value: string) => {
     setEditingBlock((current) => (current ? { ...current, title: value } : current));
   };
 
-  const handleEditingDurationChange = (value: string) => {
+  const setEditingDuration = (value: string) => {
     setEditingBlock((current) => (current ? { ...current, durationMinutes: value } : current));
   };
 
@@ -94,13 +94,13 @@ export function useDayBlocksScreen(planId: string | undefined, dayId: string | u
     editingBlock,
     setDraftTitle,
     setDraftDuration,
-    handleAddBlock,
-    handleSaveEdit,
-    handleDeleteBlock,
-    startEditingBlock,
-    handleEditingTitleChange,
-    handleEditingDurationChange,
-    cancelEdit: () => setEditingBlock(null),
+    addBlockWithValidation,
+    saveBlockEdit,
+    confirmDeleteBlock,
+    beginBlockEdit,
+    setEditingTitle,
+    setEditingDuration,
+    cancelBlockEdit: () => setEditingBlock(null),
     moveBlock,
   };
 }

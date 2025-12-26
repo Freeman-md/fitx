@@ -14,7 +14,7 @@ export function useHistoryScreen() {
   const dividerColor = isDark ? '#374151' : '#ddd';
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadHistorySources = async () => {
       const [storedSessions, storedPlans] = await Promise.all([
         loadSessions(),
         loadWorkoutPlans(),
@@ -23,17 +23,17 @@ export function useHistoryScreen() {
       setPlans(storedPlans);
     };
 
-    void loadData();
+    void loadHistorySources();
   }, []);
 
-  const viewModel = useMemo(
+  const historyView = useMemo(
     () => buildHistoryViewModel(sessions, plans, selectedSessionId),
     [sessions, plans, selectedSessionId]
   );
 
   return {
-    listItems: viewModel.listItems,
-    selectedSession: viewModel.selectedDetail,
+    sessionItems: historyView.listItems,
+    selectedSession: historyView.selectedDetail,
     selectSession: setSelectedSessionId,
     isDark,
     dividerColor,

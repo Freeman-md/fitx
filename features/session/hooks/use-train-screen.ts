@@ -23,7 +23,7 @@ export function useTrainScreen(options: UseTrainScreenOptions = {}) {
     }
   }, [hasActiveSession, sessionState.isResting]);
 
-  const handleStartSessionForDay = (dayId: string) => {
+  const startSessionIfValid = (dayId: string) => {
     const check = canStartSessionFromPlan(sessionState.selectedPlan, dayId);
     if (!check.ok) {
       Alert.alert('Cannot start session', check.reason);
@@ -35,7 +35,7 @@ export function useTrainScreen(options: UseTrainScreenOptions = {}) {
     void sessionState.startSessionForDay(sessionState.selectedPlan.id, dayId);
   };
 
-  const handleEndSessionPrompt = () => {
+  const confirmEndSession = () => {
     if (!sessionState.activeSession) {
       return;
     }
@@ -66,8 +66,8 @@ export function useTrainScreen(options: UseTrainScreenOptions = {}) {
     theme,
     inputRef,
     setNumber: getSetNumber(sessionState.activePosition),
-    startSessionForDay: handleStartSessionForDay,
-    endSessionPrompt: handleEndSessionPrompt,
+    startSessionForDay: startSessionIfValid,
+    endSessionPrompt: confirmEndSession,
     hasActiveSession,
   };
 }

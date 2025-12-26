@@ -15,14 +15,14 @@ export default function BlockExercisesScreen() {
     currentDay,
     currentBlock,
     orderedExercises,
-    draft,
-    editingExercise,
-    handleAddExercise,
-    startEditingExercise,
-    handleSaveEdit,
-    updateDraftField,
-    updateEditingField,
-    cancelEdit,
+    exerciseDraft,
+    exerciseBeingEdited,
+    addExerciseWithValidation,
+    beginExerciseEdit,
+    saveExerciseEdit,
+    setDraftField,
+    setEditingField,
+    cancelExerciseEdit,
     deleteExercise,
     moveExercise,
   } = useBlockExercisesScreen(planId, dayId, blockId);
@@ -33,14 +33,14 @@ export default function BlockExercisesScreen() {
       day={currentDay}
       block={currentBlock}
       exercises={orderedExercises}
-      draft={draft}
-      editingExercise={editingExercise}
-      onChangeDraftField={updateDraftField}
-      onChangeEditingField={updateEditingField}
-      onAddExercise={() => void handleAddExercise()}
-      onSaveEdit={() => void handleSaveEdit()}
-      onCancelEdit={cancelEdit}
-      onStartEdit={startEditingExercise}
+      draft={exerciseDraft}
+      editingExercise={exerciseBeingEdited}
+      onChangeDraftField={setDraftField}
+      onChangeEditingField={setEditingField}
+      onAddExercise={() => void addExerciseWithValidation()}
+      onSaveEdit={() => void saveExerciseEdit()}
+      onCancelEdit={cancelExerciseEdit}
+      onStartEdit={beginExerciseEdit}
       onDelete={(exerciseId) => void deleteExercise(exerciseId)}
       onMoveUp={(exerciseId) => void moveExercise(exerciseId, 'up')}
       onMoveDown={(exerciseId) => void moveExercise(exerciseId, 'down')}

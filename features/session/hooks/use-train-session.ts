@@ -36,15 +36,14 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
   });
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadInitialState = async () => {
       const storedPlans = await loadWorkoutPlans();
       const storedActiveSession = await loadActiveSession();
       setPlans(storedPlans);
       setActiveSession(storedActiveSession);
-
     };
 
-    void loadData();
+    void loadInitialState();
   }, []);
 
   const selectedPlan = useMemo(
@@ -86,7 +85,7 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
 
   };
 
-  const handleSetAction = async (markCompleted: boolean) => {
+  const applySetResolution = async (markCompleted: boolean) => {
     if (!activeSession || !activePosition || isResting) {
       return;
     }
@@ -115,7 +114,6 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
     setActualRepsInput('');
     setActualTimeInput('');
 
-
     if (nextSession.status === SessionStatus.Active) {
       const restSeconds = currentExerciseInfo?.restSeconds ?? 0;
       await startRestTimer(restSeconds);
@@ -123,11 +121,11 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
   };
 
   const completeSet = async () => {
-    await handleSetAction(true);
+    await applySetResolution(true);
   };
 
   const skipSet = async () => {
-    await handleSetAction(false);
+    await applySetResolution(false);
   };
 
   const endSession = async (status: SessionStatusType) => {

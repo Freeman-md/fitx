@@ -16,7 +16,7 @@ export function usePlanDays(planId: string | undefined) {
   const [plan, setPlan] = useState<WorkoutPlan | null>(null);
   const [plans, setPlans] = useState<WorkoutPlan[]>([]);
 
-  const loadPlan = useCallback(async () => {
+  const loadPlanFromStorage = useCallback(async () => {
     const storedPlans = await loadWorkoutPlans();
     setPlans(storedPlans);
     const selectedPlan = storedPlans.find((item) => item.id === planId) ?? null;
@@ -25,8 +25,8 @@ export function usePlanDays(planId: string | undefined) {
 
   useFocusEffect(
     useCallback(() => {
-      void loadPlan();
-    }, [loadPlan])
+      void loadPlanFromStorage();
+    }, [loadPlanFromStorage])
   );
 
   const orderedDays = useMemo(() => {

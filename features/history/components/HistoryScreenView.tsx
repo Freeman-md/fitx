@@ -5,7 +5,7 @@ import type { HistoryListItem, HistorySessionDetail } from '@/features/history/u
 import { DetailText, RowText, SectionTitle, StatusText } from '@/components/ui/text';
 
 type HistoryScreenViewProps = {
-  listItems: HistoryListItem[];
+  sessionItems: HistoryListItem[];
   selectedSession: HistorySessionDetail | null;
   isDark: boolean;
   dividerColor: string;
@@ -13,7 +13,7 @@ type HistoryScreenViewProps = {
 };
 
 export function HistoryScreenView({
-  listItems,
+  sessionItems,
   selectedSession,
   isDark,
   dividerColor,
@@ -25,12 +25,12 @@ export function HistoryScreenView({
         <Text style={[styles.pageTitle, isDark ? styles.pageTitleDark : null]}>
           History
         </Text>
-        {listItems.length === 0 ? (
+        {sessionItems.length === 0 ? (
           <StatusText>No completed sessions yet.</StatusText>
         ) : (
           <View style={styles.section}>
             <SectionTitle>Completed Sessions</SectionTitle>
-            {listItems.map((session) => (
+            {sessionItems.map((session) => (
               <TouchableOpacity
                 key={session.id}
                 style={[styles.row, { borderBottomColor: dividerColor }]}

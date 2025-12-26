@@ -9,7 +9,7 @@ export function usePlanDaysScreen(planId: string | undefined) {
   const [newDayName, setNewDayName] = useState('');
   const [editingDay, setEditingDay] = useState<DayEdit | null>(null);
 
-  const handleAddDay = async () => {
+  const addDayWithValidation = async () => {
     const error = getRequiredNameAlert('Day name', newDayName);
     if (error) {
       Alert.alert(error.title, error.message);
@@ -21,7 +21,7 @@ export function usePlanDaysScreen(planId: string | undefined) {
     }
   };
 
-  const handleRenameDay = async () => {
+  const saveDayName = async () => {
     if (!editingDay) {
       return;
     }
@@ -34,7 +34,7 @@ export function usePlanDaysScreen(planId: string | undefined) {
     setEditingDay(null);
   };
 
-  const handleDeleteDay = (dayId: string, dayName: string) => {
+  const confirmDeleteDay = (dayId: string, dayName: string) => {
     Alert.alert('Delete Day', `Delete "${dayName}"?`, [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -47,11 +47,11 @@ export function usePlanDaysScreen(planId: string | undefined) {
     ]);
   };
 
-  const startEditingDay = (dayId: string, dayName: string) => {
+  const beginDayEdit = (dayId: string, dayName: string) => {
     setEditingDay({ id: dayId, name: dayName });
   };
 
-  const handleEditingNameChange = (value: string) => {
+  const setEditingName = (value: string) => {
     if (!editingDay) {
       return;
     }
@@ -64,12 +64,12 @@ export function usePlanDaysScreen(planId: string | undefined) {
     newDayName,
     setNewDayName,
     editingDay,
-    startEditingDay,
-    handleEditingNameChange,
-    handleAddDay,
-    handleRenameDay,
-    handleDeleteDay,
+    beginDayEdit,
+    setEditingName,
+    addDayWithValidation,
+    saveDayName,
+    confirmDeleteDay,
     moveDay,
-    cancelEdit: () => setEditingDay(null),
+    cancelDayEdit: () => setEditingDay(null),
   };
 }

@@ -32,48 +32,48 @@ export function useBlockExercisesScreen(
     deleteExercise,
     moveExercise,
   } = useBlockExercises(planId, dayId, blockId);
-  const [draft, setDraft] = useState<ExerciseDraft>(emptyDraft);
-  const [editingExercise, setEditingExercise] = useState<EditingExercise | null>(null);
+  const [exerciseDraft, setExerciseDraft] = useState<ExerciseDraft>(emptyDraft);
+  const [exerciseBeingEdited, setExerciseBeingEdited] = useState<EditingExercise | null>(null);
 
-  const nextOrder = useMemo(() => getNextOrder(orderedExercises), [orderedExercises]);
+  const nextExerciseOrder = useMemo(() => getNextOrder(orderedExercises), [orderedExercises]);
 
-  const handleAddExercise = async () => {
+  const addExerciseWithValidation = async () => {
     if (!currentBlock) {
       return;
     }
-    if (!hasPerformanceTarget(draft)) {
+    if (!hasPerformanceTarget(exerciseDraft)) {
       Alert.alert('Exercise needs reps or time', 'Add reps or time to save this exercise.');
       return;
     }
-    const nextExercise = buildExerciseFromDraft(draft, nextOrder);
+    const nextExercise = buildExerciseFromDraft(exerciseDraft, nextExerciseOrder);
     await addExercise(nextExercise);
-    setDraft(emptyDraft);
+    setExerciseDraft(emptyDraft);
   };
 
-  const startEditingExercise = (exercise: Exercise) => {
-    setEditingExercise({ id: exercise.id, ...draftFromExercise(exercise) });
+  const beginExerciseEdit = (exercise: Exercise) => {
+    setExerciseBeingEdited({ id: exercise.id, ...draftFromExercise(exercise) });
   };
 
-  const handleSaveEdit = async () => {
-    if (!editingExercise) {
+  const saveExerciseEdit = async () => {
+    if (!exerciseBeingEdited) {
       return;
     }
-    if (!hasPerformanceTarget(editingExercise)) {
+    if (!hasPerformanceTarget(exerciseBeingEdited)) {
       Alert.alert('Exercise needs reps or time', 'Add reps or time to save this exercise.');
       return;
     }
-    await editExercise(editingExercise.id, (exercise) =>
-      applyDraftToExercise(exercise, editingExercise)
+    await editExercise(exerciseBeingEdited.id, (exercise) =>
+      applyDraftToExercise(exercise, exerciseBeingEdited)
     );
-    setEditingExercise(null);
+    setExerciseBeingEdited(null);
   };
 
-  const updateDraftField = (field: keyof ExerciseDraft, value: string) => {
-    setDraft((current) => ({ ...current, [field]: value }));
+  const setDraftField = (field: keyof ExerciseDraft, value: string) => {
+    setExerciseDraft((current) => ({ ...current, [field]: value }));
   };
 
-  const updateEditingField = (field: keyof ExerciseDraft, value: string) => {
-    setEditingExercise((current) => (current ? { ...current, [field]: value } : current));
+  const setEditingField = (field: keyof ExerciseDraft, value: string) => {
+    setExerciseBeingEdited((current) => (current ? { ...current, [field]: value } : current));
   };
 
   return {
@@ -81,14 +81,14 @@ export function useBlockExercisesScreen(
     currentDay,
     currentBlock,
     orderedExercises,
-    draft,
-    editingExercise,
-    handleAddExercise,
-    startEditingExercise,
-    handleSaveEdit,
-    updateDraftField,
-    updateEditingField,
-    cancelEdit: () => setEditingExercise(null),
+    exerciseDraft,
+    exerciseBeingEdited,
+    addExerciseWithValidation,
+    beginExerciseEdit,
+    saveExerciseEdit,
+    setDraftField,
+    setEditingField,
+    cancelExerciseEdit: () => setExerciseBeingEdited(null),
     deleteExercise,
     moveExercise,
   };

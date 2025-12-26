@@ -2,11 +2,12 @@ import { HistoryScreenView } from '@/features/history/components/HistoryScreenVi
 import { useHistoryScreen } from '@/features/history/hooks/use-history-screen';
 
 export default function HistoryScreen() {
-  const { listItems, selectedSession, selectSession, isDark, dividerColor } = useHistoryScreen();
+  const { sessionItems, selectedSession, selectSession, isDark, dividerColor } =
+    useHistoryScreen();
 
   return (
     <HistoryScreenView
-      listItems={listItems}
+      sessionItems={sessionItems}
       selectedSession={selectedSession}
       isDark={isDark}
       dividerColor={dividerColor}

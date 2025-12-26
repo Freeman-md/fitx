@@ -14,15 +14,15 @@ export function useBlockExercises(
 ) {
   const [plans, setPlans] = useState<WorkoutPlan[]>([]);
 
-  const loadPlan = useCallback(async () => {
+  const loadPlansFromStorage = useCallback(async () => {
     const storedPlans = await loadWorkoutPlans();
     setPlans(storedPlans);
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      void loadPlan();
-    }, [loadPlan])
+      void loadPlansFromStorage();
+    }, [loadPlansFromStorage])
   );
 
   const currentPlan = useMemo(
