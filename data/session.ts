@@ -1,6 +1,6 @@
 import { SessionStatus } from './models';
 import type { Session, WorkoutDay, WorkoutPlan } from './models';
-import { loadSessions, saveSessions } from './storage';
+import { loadSessions, saveSession, saveSessions } from './storage';
 
 function createSessionId(timestamp: number): string {
   const randomSuffix = Math.random().toString(36).slice(2, 8);
@@ -53,6 +53,7 @@ export async function startSession(plan: WorkoutPlan, day: WorkoutDay): Promise<
   const session = buildSession(plan, day, startedAt);
   const existingSessions = await loadSessions();
   const updatedSessions = closeActiveSessions(existingSessions, startedAt, session.id);
-  await saveSessions([...updatedSessions.filter((item) => item.id !== session.id), session]);
+  await saveSessions(updatedSessions);
+  await saveSession(session);
   return session;
 }

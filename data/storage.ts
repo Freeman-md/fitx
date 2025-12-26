@@ -56,16 +56,34 @@ export async function loadSessions(): Promise<Session[]> {
   if (!stored) {
     return [];
   }
-  return JSON.parse(stored) as Session[];
+  try {
+    const parsed = JSON.parse(stored) as Session[];
+    const normalized = normalizeActiveSessions(parsed);
+    if (normalized !== parsed) {
+      await AsyncStorage.setItem(SESSIONS_KEY, JSON.stringify(normalized));
+    }
+    return normalized;
+  } catch (error) {
+    return [];
+  }
+}
+
+export async function ensureSingleActiveSession(): Promise<Session | null> {
+  const sessions = await loadSessions();
+  const normalized = normalizeActiveSessions(sessions);
+  if (normalized !== sessions) {
+    await AsyncStorage.setItem(SESSIONS_KEY, JSON.stringify(normalized));
+  }
+  return normalized.find((item) => item.status === SessionStatus.Active) ?? null;
 }
 
 export async function saveSessions(sessions: Session[]): Promise<void> {
-  await AsyncStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
+  const normalized = normalizeActiveSessions(sessions);
+  await AsyncStorage.setItem(SESSIONS_KEY, JSON.stringify(normalized));
 }
 
 export async function loadActiveSession(): Promise<Session | null> {
-  const sessions = await loadSessions();
-  return sessions.find((item) => item.status === SessionStatus.Active) ?? null;
+  return ensureSingleActiveSession();
 }
 
 export async function resetStorage(): Promise<void> {
@@ -99,4 +117,28 @@ export async function saveLastCompletedSessionId(sessionId: string): Promise<voi
 
 export async function loadLastCompletedSessionId(): Promise<string | null> {
   return AsyncStorage.getItem(LAST_COMPLETED_SESSION_KEY);
+}
+
+function normalizeActiveSessions(sessions: Session[]): Session[] {
+  const activeSessions = sessions.filter((item) => item.status === SessionStatus.Active);
+  if (activeSessions.length <= 1) {
+    return sessions;
+  }
+  const keep = activeSessions.reduce((latest, current) => {
+    return Date.parse(current.startedAt) >= Date.parse(latest.startedAt) ? current : latest;
+  }, activeSessions[0]);
+  const now = new Date().toISOString();
+  return sessions.map((session) => {
+    if (session.id === keep.id) {
+      return session;
+    }
+    if (session.status === SessionStatus.Active) {
+      return {
+        ...session,
+        status: SessionStatus.Abandoned,
+        endedAt: session.endedAt ?? now,
+      };
+    }
+    return session;
+  });
 }
