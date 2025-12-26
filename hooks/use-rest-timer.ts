@@ -10,9 +10,7 @@ type UseRestTimerOptions = {
 export function useRestTimer({ sessionId }: UseRestTimerOptions) {
   const [isResting, setIsResting] = useState(false);
   const [restSecondsRemaining, setRestSecondsRemaining] = useState(0);
-  const [restEndsAt, setRestEndsAt] = useState<string | null>(null);
   const restIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const restEndsAtRef = useRef<string | null>(null);
   const appStateRef = useRef(AppState.currentState);
 
   const updateRestRemaining = (endsAt: string) => {
@@ -28,8 +26,6 @@ export function useRestTimer({ sessionId }: UseRestTimerOptions) {
     }
     setIsResting(false);
     setRestSecondsRemaining(0);
-    setRestEndsAt(null);
-    restEndsAtRef.current = null;
     await clearRestState();
   };
 
@@ -44,8 +40,6 @@ export function useRestTimer({ sessionId }: UseRestTimerOptions) {
     }
 
     setIsResting(true);
-    setRestEndsAt(endsAt);
-    restEndsAtRef.current = endsAt;
     const remaining = updateRestRemaining(endsAt);
     if (remaining <= 0) {
       void stopRestTimer();
@@ -68,8 +62,6 @@ export function useRestTimer({ sessionId }: UseRestTimerOptions) {
     await stopRestTimer();
     const endsAt = new Date(Date.now() + seconds * 1000).toISOString();
     setIsResting(true);
-    setRestEndsAt(endsAt);
-    restEndsAtRef.current = endsAt;
     updateRestRemaining(endsAt);
     await saveRestState({ sessionId, endsAt });
 
@@ -100,8 +92,17 @@ export function useRestTimer({ sessionId }: UseRestTimerOptions) {
       const previous = appStateRef.current;
       appStateRef.current = nextState;
 
-      if (previous.match(/inactive|background/) && nextState === 'active' && restEndsAtRef.current) {
-        resumeRestTimer(restEndsAtRef.current);
+      if (previous.match(/inactive|background/) && nextState === 'active') {
+        const refreshRestState = async () => {
+          if (!sessionId) {
+            return;
+          }
+          const storedRestState = await loadRestState();
+          if (storedRestState?.sessionId === sessionId) {
+            resumeRestTimer(storedRestState.endsAt);
+          }
+        };
+        void refreshRestState();
       }
     });
 
