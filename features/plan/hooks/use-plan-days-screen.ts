@@ -13,12 +13,13 @@ export function usePlanDaysScreen(planId: string | undefined) {
     const error = getRequiredNameAlert('Day name', newDayName);
     if (error) {
       Alert.alert(error.title, error.message);
-      return;
+      return false;
     }
     const added = await addDay(newDayName.trim());
     if (added) {
       setNewDayName('');
     }
+    return added;
   };
 
   const saveDayName = async () => {

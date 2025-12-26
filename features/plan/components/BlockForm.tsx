@@ -3,6 +3,7 @@ import { StyleSheet, TextInput, View } from 'react-native';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Spacing } from '@/components/ui/spacing';
+import { SecondaryText } from '@/components/ui/text';
 
 type BlockFormProps = {
   title: string;
@@ -24,6 +25,7 @@ export function BlockForm({
 
   return (
     <View style={styles.section}>
+      <SecondaryText>Block title</SecondaryText>
       <TextInput
         placeholder="Block title"
         placeholderTextColor={placeholderColor}
@@ -31,6 +33,7 @@ export function BlockForm({
         onChangeText={onChangeTitle}
         style={[styles.input, { borderColor, color: textColor }]}
       />
+      <SecondaryText>Duration minutes</SecondaryText>
       <TextInput
         placeholder="Duration minutes"
         placeholderTextColor={placeholderColor}

@@ -69,7 +69,7 @@ export default function TrainScreen() {
       onSelectPlan={handleSelectPlan}
       onSelectDay={setSelectedDayId}
       onStartSession={() => void startSessionForDay()}
-      onCreatePlan={() => router.push('/plans/create')}
+      onCreatePlan={() => router.push('/plans')}
       onAddDays={() => {
         if (selectedPlanId) {
           router.push(`/plans/${selectedPlanId}`);

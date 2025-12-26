@@ -37,5 +37,6 @@ export function usePlansList() {
   return {
     plans,
     requestDeletePlan,
+    refreshPlans: loadPlansFromStorage,
   };
 }

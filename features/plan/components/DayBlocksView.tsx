@@ -64,36 +64,36 @@ export function DayBlocksView({
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.screen}>
         <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
-        <PageTitle>{day.name}</PageTitle>
-        <SecondaryText style={styles.subtitle}>
-          {plan.name} · {plan.gymType ?? 'No gym type'}
-        </SecondaryText>
-        <View style={styles.section}>
-          {blocks.length === 0 ? (
-            <SecondaryText style={styles.centeredText}>No blocks yet.</SecondaryText>
-          ) : (
-            blocks.map((block) => (
-              <BlockCard
-                key={block.id}
-                block={block}
-                isEditing={editingBlock?.id === block.id}
-                editingTitle={editingBlock?.title ?? block.title}
-                editingDuration={editingBlock?.durationMinutes ?? String(block.durationMinutes)}
-                onChangeTitle={onChangeEditingTitle}
-                onChangeDuration={onChangeEditingDuration}
-                onCancelEdit={onCancelEdit}
-                onSaveEdit={onSaveEdit}
-                onMoveUp={() => onMoveUp(block.id)}
-                onMoveDown={() => onMoveDown(block.id)}
-                onShowExercises={() => onShowExercises(block.id)}
-                onStartEdit={() => onStartEdit(block)}
-                onDelete={() => onDeleteBlock(block.id, block.title)}
-              />
-            ))
-          )}
-        </View>
+          <PageTitle>{day.name}</PageTitle>
+          <SecondaryText style={styles.subtitle}>
+            {plan.name} · {plan.gymType ?? 'No gym type'}
+          </SecondaryText>
+          <View style={styles.section}>
+            {blocks.length === 0 ? (
+              <SecondaryText style={styles.centeredText}>No blocks yet.</SecondaryText>
+            ) : (
+              blocks.map((block) => (
+                <BlockCard
+                  key={block.id}
+                  block={block}
+                  isEditing={editingBlock?.id === block.id}
+                  editingTitle={editingBlock?.title ?? block.title}
+                  editingDuration={editingBlock?.durationMinutes ?? String(block.durationMinutes)}
+                  onChangeTitle={onChangeEditingTitle}
+                  onChangeDuration={onChangeEditingDuration}
+                  onCancelEdit={onCancelEdit}
+                  onSaveEdit={onSaveEdit}
+                  onMoveUp={() => onMoveUp(block.id)}
+                  onMoveDown={() => onMoveDown(block.id)}
+                  onShowExercises={() => onShowExercises(block.id)}
+                  onStartEdit={() => onStartEdit(block)}
+                  onDelete={() => onDeleteBlock(block.id, block.title)}
+                />
+              ))
+            )}
+          </View>
         </ScrollView>
-        <Fab accessibilityLabel="Add block" onPress={onAddBlock} />
+        <Fab accessibilityLabel="Add block" label="New Block" onPress={onAddBlock} />
       </View>
     </SafeAreaView>
   );

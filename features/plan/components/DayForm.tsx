@@ -3,6 +3,7 @@ import { StyleSheet, TextInput, View } from 'react-native';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Spacing } from '@/components/ui/spacing';
+import { SecondaryText } from '@/components/ui/text';
 
 type DayFormProps = {
   name: string;
@@ -17,6 +18,7 @@ export function DayForm({ name, onChangeName }: DayFormProps) {
 
   return (
     <View style={styles.section}>
+      <SecondaryText>Day name</SecondaryText>
       <TextInput
         placeholder="Day name"
         placeholderTextColor={placeholderColor}

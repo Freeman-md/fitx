@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Spacing } from '@/components/ui/spacing';
+import { SecondaryText } from '@/components/ui/text';
 
 type ExerciseFormProps = {
   name: string;
@@ -50,6 +51,7 @@ export function ExerciseForm({
 
   return (
     <View style={styles.section}>
+      <SecondaryText>Exercise name</SecondaryText>
       <TextInput
         placeholder="Exercise name"
         placeholderTextColor={placeholderColor}
@@ -57,6 +59,7 @@ export function ExerciseForm({
         onChangeText={onChangeName}
         style={inputStyle}
       />
+      <SecondaryText>Sets</SecondaryText>
       <TextInput
         placeholder="Sets"
         placeholderTextColor={placeholderColor}
@@ -65,6 +68,7 @@ export function ExerciseForm({
         keyboardType="number-pad"
         style={inputStyle}
       />
+      <SecondaryText>Target type</SecondaryText>
       <View style={styles.modeRow}>
         <Button
           label="Reps"
@@ -81,6 +85,7 @@ export function ExerciseForm({
       </View>
       {mode === 'reps' ? (
         <>
+          <SecondaryText>Reps min</SecondaryText>
           <TextInput
             placeholder="Reps min"
             placeholderTextColor={placeholderColor}
@@ -89,6 +94,7 @@ export function ExerciseForm({
             keyboardType="number-pad"
             style={inputStyle}
           />
+          <SecondaryText>Reps max</SecondaryText>
           <TextInput
             placeholder="Reps max"
             placeholderTextColor={placeholderColor}
@@ -99,15 +105,19 @@ export function ExerciseForm({
           />
         </>
       ) : (
-        <TextInput
-          placeholder="Time (seconds)"
-          placeholderTextColor={placeholderColor}
-          value={timeSeconds}
-          onChangeText={onChangeTimeSeconds}
-          keyboardType="number-pad"
-          style={inputStyle}
-        />
+        <>
+          <SecondaryText>Time seconds</SecondaryText>
+          <TextInput
+            placeholder="Time (seconds)"
+            placeholderTextColor={placeholderColor}
+            value={timeSeconds}
+            onChangeText={onChangeTimeSeconds}
+            keyboardType="number-pad"
+            style={inputStyle}
+          />
+        </>
       )}
+      <SecondaryText>Rest seconds</SecondaryText>
       <TextInput
         placeholder="Rest (seconds)"
         placeholderTextColor={placeholderColor}
@@ -116,6 +126,7 @@ export function ExerciseForm({
         keyboardType="number-pad"
         style={inputStyle}
       />
+      <SecondaryText>Notes</SecondaryText>
       <TextInput
         placeholder="Notes"
         placeholderTextColor={placeholderColor}

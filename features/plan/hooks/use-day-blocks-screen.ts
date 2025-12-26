@@ -22,19 +22,20 @@ export function useDayBlocksScreen(planId: string | undefined, dayId: string | u
     const titleError = getRequiredNameAlert('Block title', draftTitle);
     if (titleError) {
       Alert.alert(titleError.title, titleError.message);
-      return;
+      return false;
     }
     const duration = parsePositiveNumber(draftDuration);
     if (!duration) {
       const durationError = getDurationAlert();
       Alert.alert(durationError.title, durationError.message);
-      return;
+      return false;
     }
     const added = await addBlock(draftTitle.trim(), duration);
     if (added) {
       setDraftTitle('');
       setDraftDuration('');
     }
+    return added;
   };
 
   const saveBlockEdit = async () => {

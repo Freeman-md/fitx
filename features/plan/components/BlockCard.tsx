@@ -47,11 +47,13 @@ export function BlockCard({
     <Card style={styles.card}>
       {isEditing ? (
         <>
+          <SecondaryText>Block title</SecondaryText>
           <TextInput
             value={editingTitle}
             onChangeText={onChangeTitle}
             style={[styles.input, { borderColor, color: textColor }]}
           />
+          <SecondaryText>Duration minutes</SecondaryText>
           <TextInput
             value={editingDuration}
             onChangeText={onChangeDuration}

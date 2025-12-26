@@ -89,57 +89,59 @@ export function BlockExercisesView({
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.screen}>
         <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
-        <PageTitle>{block.title}</PageTitle>
-        <SecondaryText style={styles.subtitle}>
-          {day.name} · {plan.name}
-        </SecondaryText>
-        <View style={styles.section}>
-          {exercises.length === 0 ? (
-            <SecondaryText style={styles.centeredText}>No exercises yet.</SecondaryText>
-          ) : (
-            exercises.map((exercise) =>
-              editingExercise?.id === exercise.id ? (
-                <View key={exercise.id} style={styles.editingCard}>
-                  <ExerciseForm
-                    name={editingExercise.name}
-                    sets={editingExercise.sets}
-                    repsMin={editingExercise.repsMin}
-                    repsMax={editingExercise.repsMax}
-                    timeSeconds={editingExercise.timeSeconds}
-                    restSeconds={editingExercise.restSeconds}
-                    notes={editingExercise.notes}
-                    mode={editingMode}
-                    onChangeMode={handleEditingModeChange}
-                    onChangeName={(value) => onChangeEditingField('name', value)}
-                    onChangeSets={(value) => onChangeEditingField('sets', value)}
-                    onChangeRepsMin={(value) => onChangeEditingField('repsMin', value)}
-                    onChangeRepsMax={(value) => onChangeEditingField('repsMax', value)}
-                    onChangeTimeSeconds={(value) => onChangeEditingField('timeSeconds', value)}
-                    onChangeRestSeconds={(value) =>
-                      onChangeEditingField('restSeconds', value)
-                    }
-                    onChangeNotes={(value) => onChangeEditingField('notes', value)}
-                  />
-                  <View style={styles.editActions}>
-                    <Button label="Cancel" variant="secondary" onPress={onCancelEdit} />
-                    <Button label="Save" onPress={onSaveEdit} />
+          <PageTitle>{block.title}</PageTitle>
+          <SecondaryText style={styles.subtitle}>
+            {day.name} · {plan.name}
+          </SecondaryText>
+          <View style={styles.section}>
+            {exercises.length === 0 ? (
+              <SecondaryText style={styles.centeredText}>No exercises yet.</SecondaryText>
+            ) : (
+              exercises.map((exercise) =>
+                editingExercise?.id === exercise.id ? (
+                  <View key={exercise.id} style={styles.editingCard}>
+                    <ExerciseForm
+                      name={editingExercise.name}
+                      sets={editingExercise.sets}
+                      repsMin={editingExercise.repsMin}
+                      repsMax={editingExercise.repsMax}
+                      timeSeconds={editingExercise.timeSeconds}
+                      restSeconds={editingExercise.restSeconds}
+                      notes={editingExercise.notes}
+                      mode={editingMode}
+                      onChangeMode={handleEditingModeChange}
+                      onChangeName={(value) => onChangeEditingField('name', value)}
+                      onChangeSets={(value) => onChangeEditingField('sets', value)}
+                      onChangeRepsMin={(value) => onChangeEditingField('repsMin', value)}
+                      onChangeRepsMax={(value) => onChangeEditingField('repsMax', value)}
+                      onChangeTimeSeconds={(value) =>
+                        onChangeEditingField('timeSeconds', value)
+                      }
+                      onChangeRestSeconds={(value) =>
+                        onChangeEditingField('restSeconds', value)
+                      }
+                      onChangeNotes={(value) => onChangeEditingField('notes', value)}
+                    />
+                    <View style={styles.editActions}>
+                      <Button label="Cancel" variant="secondary" onPress={onCancelEdit} />
+                      <Button label="Save" onPress={onSaveEdit} />
+                    </View>
                   </View>
-                </View>
-              ) : (
-                <ExerciseCard
-                  key={exercise.id}
-                  exercise={exercise}
-                  onMoveUp={() => onMoveUp(exercise.id)}
-                  onMoveDown={() => onMoveDown(exercise.id)}
-                  onEdit={() => onStartEdit(exercise)}
-                  onDelete={() => onDelete(exercise.id)}
-                />
+                ) : (
+                  <ExerciseCard
+                    key={exercise.id}
+                    exercise={exercise}
+                    onMoveUp={() => onMoveUp(exercise.id)}
+                    onMoveDown={() => onMoveDown(exercise.id)}
+                    onEdit={() => onStartEdit(exercise)}
+                    onDelete={() => onDelete(exercise.id)}
+                  />
+                )
               )
-            )
-          )}
-        </View>
+            )}
+          </View>
         </ScrollView>
-        <Fab accessibilityLabel="Add exercise" onPress={onAddExercise} />
+        <Fab accessibilityLabel="Add exercise" label="New Exercise" onPress={onAddExercise} />
       </View>
     </SafeAreaView>
   );

@@ -43,6 +43,7 @@ export function DayCard({
     <Card style={styles.card}>
       {isEditing ? (
         <>
+          <SecondaryText>Day name</SecondaryText>
           <TextInput
             value={editingName}
             onChangeText={onChangeName}

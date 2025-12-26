@@ -39,15 +39,16 @@ export function useBlockExercisesScreen(
 
   const addExerciseWithValidation = async () => {
     if (!currentBlock) {
-      return;
+      return false;
     }
     if (!hasPerformanceTarget(exerciseDraft)) {
       Alert.alert('Exercise needs reps or time', 'Add reps or time to save this exercise.');
-      return;
+      return false;
     }
     const nextExercise = buildExerciseFromDraft(exerciseDraft, nextExerciseOrder);
     await addExercise(nextExercise);
     setExerciseDraft(emptyDraft);
+    return true;
   };
 
   const beginExerciseEdit = (exercise: Exercise) => {
@@ -88,6 +89,7 @@ export function useBlockExercisesScreen(
     saveExerciseEdit,
     setDraftField,
     setEditingField,
+    resetExerciseDraft: () => setExerciseDraft(emptyDraft),
     cancelExerciseEdit: () => setExerciseBeingEdited(null),
     deleteExercise,
     moveExercise,
