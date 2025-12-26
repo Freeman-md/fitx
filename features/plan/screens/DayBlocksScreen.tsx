@@ -49,7 +49,7 @@ export default function DayBlocksScreen() {
     <>
       <Stack.Screen
         options={{
-          title: currentDay?.name ? `Day: ${currentDay.name}` : 'Day',
+          title: 'Day Details',
           headerBackTitle: 'Back',
           headerBackTitleVisible: true,
         }}
@@ -58,18 +58,13 @@ export default function DayBlocksScreen() {
         plan={currentPlan}
         day={currentDay}
         blocks={orderedBlocks}
-        editingBlock={editingBlock}
         onAddBlock={() => setIsAddOpen(true)}
-        onCancelEdit={cancelBlockEdit}
-        onSaveEdit={() => void saveBlockEdit()}
-        onStartEdit={beginBlockEdit}
-        onChangeEditingTitle={setEditingTitle}
-        onChangeEditingDuration={setEditingDuration}
         onMoveUp={(blockId) => void moveBlock(blockId, 'up')}
         onMoveDown={(blockId) => void moveBlock(blockId, 'down')}
         onShowExercises={(blockId) =>
           router.push(`/plans/${planId}/days/${dayId}/blocks/${blockId}`)
         }
+        onEditBlock={beginBlockEdit}
         onDeleteBlock={confirmDeleteBlock}
         onBack={() => router.back()}
       />
@@ -94,6 +89,30 @@ export default function DayBlocksScreen() {
           onChangeTitle={setDraftTitle}
           onChangeDuration={setDraftDuration}
         />
+      </BottomSheet>
+      <BottomSheet
+        visible={Boolean(editingBlock)}
+        title="Edit Block"
+        onDismiss={cancelBlockEdit}
+        footer={
+          <View style={styles.footer}>
+            <Button label="Save" onPress={() => void saveBlockEdit()} style={styles.fullWidth} />
+            <Button
+              label="Cancel"
+              variant="secondary"
+              onPress={cancelBlockEdit}
+              style={styles.fullWidth}
+            />
+          </View>
+        }>
+        {editingBlock ? (
+          <BlockForm
+            title={editingBlock.title}
+            durationMinutes={editingBlock.durationMinutes}
+            onChangeTitle={setEditingTitle}
+            onChangeDuration={setEditingDuration}
+          />
+        ) : null}
       </BottomSheet>
     </>
   );

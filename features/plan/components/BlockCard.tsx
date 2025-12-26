@@ -1,7 +1,7 @@
-import { StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import type { Block } from '@/data/models';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { PrimaryText, SecondaryText } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
@@ -10,103 +10,132 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 
 type BlockCardProps = {
   block: Block;
-  isEditing: boolean;
-  editingTitle: string;
-  editingDuration: string;
-  onChangeTitle: (value: string) => void;
-  onChangeDuration: (value: string) => void;
-  onCancelEdit: () => void;
-  onSaveEdit: () => void;
   onMoveUp: () => void;
   onMoveDown: () => void;
-  onShowExercises: () => void;
-  onStartEdit: () => void;
+  onOpenExercises: () => void;
+  onEdit: () => void;
   onDelete: () => void;
 };
 
 export function BlockCard({
   block,
-  isEditing,
-  editingTitle,
-  editingDuration,
-  onChangeTitle,
-  onChangeDuration,
-  onCancelEdit,
-  onSaveEdit,
   onMoveUp,
   onMoveDown,
-  onShowExercises,
-  onStartEdit,
+  onOpenExercises,
+  onEdit,
   onDelete,
 }: BlockCardProps) {
   const colorScheme = useColorScheme();
-  const borderColor = colorScheme === 'dark' ? '#374151' : '#e5e7eb';
-  const textColor = colorScheme === 'dark' ? Colors.dark.text : Colors.light.text;
+  const isDark = colorScheme === 'dark';
+  const iconColor = isDark ? Colors.dark.icon : Colors.light.icon;
+  const editColor = isDark ? '#60a5fa' : '#2563eb';
+  const deleteColor = isDark ? '#f87171' : '#dc2626';
 
   return (
-    <Card style={styles.card}>
-      {isEditing ? (
-        <>
-          <SecondaryText>Block title</SecondaryText>
-          <TextInput
-            value={editingTitle}
-            onChangeText={onChangeTitle}
-            style={[styles.input, { borderColor, color: textColor }]}
-          />
-          <SecondaryText>Duration minutes</SecondaryText>
-          <TextInput
-            value={editingDuration}
-            onChangeText={onChangeDuration}
-            keyboardType="number-pad"
-            style={[styles.input, { borderColor, color: textColor }]}
-          />
-          <View style={styles.row}>
-            <Button label="Cancel" variant="secondary" size="compact" onPress={onCancelEdit} />
-            <Button label="Save" size="compact" onPress={onSaveEdit} />
-          </View>
-        </>
-      ) : (
-        <>
-          <View style={styles.row}>
-            <PrimaryText style={styles.cardTitle}>{block.title}</PrimaryText>
-            <SecondaryText style={styles.cardMeta}>
-              {block.durationMinutes}m · #{block.order}
+    <Pressable
+      accessibilityRole="button"
+      onPress={onOpenExercises}
+      style={({ pressed }) => [styles.pressable, pressed && styles.pressed]}>
+      <Card style={styles.card}>
+        <View style={styles.header}>
+          <View style={styles.info}>
+            <PrimaryText style={styles.title}>{block.title}</PrimaryText>
+            <SecondaryText style={styles.meta}>
+              {block.durationMinutes}m · {`Block ${block.order}`}
             </SecondaryText>
           </View>
-          <View style={styles.row}>
-            <Button label="Up" variant="secondary" size="compact" onPress={onMoveUp} />
-            <Button label="Down" variant="secondary" size="compact" onPress={onMoveDown} />
-            <Button label="Exercises" variant="secondary" size="compact" onPress={onShowExercises} />
-            <Button label="Edit" variant="secondary" size="compact" onPress={onStartEdit} />
-            <Button label="Delete" variant="destructive" size="compact" onPress={onDelete} />
-          </View>
-        </>
-      )}
-    </Card>
+          <MaterialIcons name="chevron-right" size={22} color={iconColor} />
+        </View>
+        <View style={styles.actionsRow}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Move block up"
+            onPress={(event) => {
+              event.stopPropagation();
+              onMoveUp();
+            }}
+            style={({ pressed }) => [styles.iconButton, pressed && styles.iconPressed]}>
+            <MaterialIcons name="arrow-upward" size={18} color={iconColor} />
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Move block down"
+            onPress={(event) => {
+              event.stopPropagation();
+              onMoveDown();
+            }}
+            style={({ pressed }) => [styles.iconButton, pressed && styles.iconPressed]}>
+            <MaterialIcons name="arrow-downward" size={18} color={iconColor} />
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Edit block"
+            onPress={(event) => {
+              event.stopPropagation();
+              onEdit();
+            }}
+            style={({ pressed }) => [styles.iconButton, pressed && styles.iconPressed]}>
+            <MaterialIcons name="edit" size={18} color={editColor} />
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Delete block"
+            onPress={(event) => {
+              event.stopPropagation();
+              onDelete();
+            }}
+            style={({ pressed }) => [styles.iconButton, pressed && styles.iconPressed]}>
+            <MaterialIcons name="delete" size={18} color={deleteColor} />
+          </Pressable>
+        </View>
+      </Card>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    gap: Spacing.sm,
+  pressable: {
+    borderRadius: 16,
   },
-  row: {
+  pressed: {
+    opacity: 0.92,
+  },
+  card: {
+    borderWidth: 0,
+    borderRadius: 16,
+    paddingVertical: Spacing.md,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
+  },
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     gap: Spacing.sm,
   },
-  cardTitle: {
+  info: {
+    flex: 1,
+    gap: Spacing.xs,
+  },
+  title: {
     fontWeight: '600',
   },
-  cardMeta: {
-    opacity: 0.7,
+  meta: {
+    opacity: 0.75,
   },
-  input: {
-    borderWidth: 1,
-    borderRadius: 8,
-    minHeight: 44,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
+  actionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: Spacing.xs,
+  },
+  iconButton: {
+    padding: Spacing.xs,
+    borderRadius: 12,
+  },
+  iconPressed: {
+    opacity: 0.7,
   },
 });

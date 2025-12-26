@@ -5,29 +5,18 @@ import type { Block, WorkoutDay, WorkoutPlan } from '@/data/models';
 import { BlockCard } from '@/features/plan/components/BlockCard';
 import { Button } from '@/components/ui/button';
 import { Fab } from '@/components/ui/fab';
-import { PageTitle, SecondaryText } from '@/components/ui/text';
+import { PageTitle, SecondaryText, SectionTitle } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
-
-type EditableBlock = {
-  id: string;
-  title: string;
-  durationMinutes: string;
-};
 
 type DayBlocksViewProps = {
   plan: WorkoutPlan | null;
   day: WorkoutDay | null;
   blocks: Block[];
-  editingBlock: EditableBlock | null;
   onAddBlock: () => void;
-  onCancelEdit: () => void;
-  onSaveEdit: () => void;
-  onStartEdit: (block: Block) => void;
-  onChangeEditingTitle: (value: string) => void;
-  onChangeEditingDuration: (value: string) => void;
   onMoveUp: (blockId: string) => void;
   onMoveDown: (blockId: string) => void;
   onShowExercises: (blockId: string) => void;
+  onEditBlock: (block: Block) => void;
   onDeleteBlock: (blockId: string, blockTitle: string) => void;
   onBack: () => void;
 };
@@ -36,16 +25,11 @@ export function DayBlocksView({
   plan,
   day,
   blocks,
-  editingBlock,
   onAddBlock,
-  onCancelEdit,
-  onSaveEdit,
-  onStartEdit,
-  onChangeEditingTitle,
-  onChangeEditingDuration,
   onMoveUp,
   onMoveDown,
   onShowExercises,
+  onEditBlock,
   onDeleteBlock,
   onBack,
 }: DayBlocksViewProps) {
@@ -61,13 +45,19 @@ export function DayBlocksView({
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <View style={styles.screen}>
         <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
-          <PageTitle>{day.name}</PageTitle>
-          <SecondaryText style={styles.subtitle}>
-            {plan.name} · {plan.gymType ?? 'No gym type'}
-          </SecondaryText>
+          <View style={styles.context}>
+            <PageTitle style={styles.dayName}>{day.name}</PageTitle>
+            <SecondaryText style={styles.subtitle}>
+              {plan.gymType ? `${plan.name} · ${plan.gymType}` : plan.name}
+            </SecondaryText>
+          </View>
+          <View style={styles.section}>
+            <SectionTitle>Blocks</SectionTitle>
+            <SecondaryText>Tap a block to edit its exercises.</SecondaryText>
+          </View>
           <View style={styles.section}>
             {blocks.length === 0 ? (
               <SecondaryText style={styles.centeredText}>No blocks yet.</SecondaryText>
@@ -76,17 +66,10 @@ export function DayBlocksView({
                 <BlockCard
                   key={block.id}
                   block={block}
-                  isEditing={editingBlock?.id === block.id}
-                  editingTitle={editingBlock?.title ?? block.title}
-                  editingDuration={editingBlock?.durationMinutes ?? String(block.durationMinutes)}
-                  onChangeTitle={onChangeEditingTitle}
-                  onChangeDuration={onChangeEditingDuration}
-                  onCancelEdit={onCancelEdit}
-                  onSaveEdit={onSaveEdit}
                   onMoveUp={() => onMoveUp(block.id)}
                   onMoveDown={() => onMoveDown(block.id)}
-                  onShowExercises={() => onShowExercises(block.id)}
-                  onStartEdit={() => onStartEdit(block)}
+                  onOpenExercises={() => onShowExercises(block.id)}
+                  onEdit={() => onEditBlock(block)}
                   onDelete={() => onDeleteBlock(block.id, block.title)}
                 />
               ))
@@ -107,15 +90,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    padding: Spacing.md,
-    gap: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.md,
     paddingBottom: Spacing.xxl,
+    gap: Spacing.md,
+  },
+  context: {
+    gap: Spacing.xs,
+  },
+  dayName: {
+    textAlign: 'left',
+    opacity: 1,
+    fontSize: 18,
+    fontWeight: '700',
   },
   section: {
     gap: Spacing.sm,
   },
   subtitle: {
-    textAlign: 'center',
+    opacity: 0.75,
   },
   centeredText: {
     textAlign: 'center',
