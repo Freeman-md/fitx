@@ -28,8 +28,7 @@ export default function PlanDaysScreen() {
     cancelDayEdit,
   } = usePlanDaysScreen(planId);
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const colorScheme = useColorScheme();
-  const destructiveColor = colorScheme === 'dark' ? '#f87171' : '#dc2626';
+  useColorScheme();
 
   const closeAddDaySheet = () => {
     setIsAddOpen(false);
@@ -61,6 +60,7 @@ export default function PlanDaysScreen() {
         onMoveDayDown={(dayId) => void moveDay(dayId, 'down')}
         onOpenBlocks={(dayId) => router.push(`/plans/${planId}/days/${dayId}`)}
         onEditDay={beginDayEdit}
+        onDeleteDay={confirmDeleteDay}
         onBack={() => router.back()}
         isMissing={!plan}
       />
@@ -99,15 +99,6 @@ export default function PlanDaysScreen() {
         {editingDay ? (
           <View style={styles.editSection}>
             <DayForm name={editingDay.name} onChangeName={setEditingName} />
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => {
-                confirmDeleteDay(editingDay.id, editingDay.name);
-                cancelDayEdit();
-              }}
-              style={styles.deleteButton}>
-              <Text style={[styles.deleteText, { color: destructiveColor }]}>Delete day</Text>
-            </Pressable>
           </View>
         ) : null}
       </BottomSheet>
@@ -124,12 +115,5 @@ const styles = StyleSheet.create({
   },
   editSection: {
     gap: Spacing.md,
-  },
-  deleteButton: {
-    paddingVertical: Spacing.xs,
-  },
-  deleteText: {
-    fontSize: 14,
-    fontWeight: '600',
   },
 });

@@ -17,6 +17,7 @@ type PlanDaysViewProps = {
   onMoveDayDown: (dayId: string) => void;
   onOpenBlocks: (dayId: string) => void;
   onEditDay: (dayId: string, dayName: string) => void;
+  onDeleteDay: (dayId: string, dayName: string) => void;
   onBack: () => void;
   isMissing: boolean;
 };
@@ -30,6 +31,7 @@ export function PlanDaysView({
   onMoveDayDown,
   onOpenBlocks,
   onEditDay,
+  onDeleteDay,
   onBack,
   isMissing,
 }: PlanDaysViewProps) {
@@ -68,6 +70,7 @@ export function PlanDaysView({
                   onMoveDown={() => onMoveDayDown(day.id)}
                   onOpenBlocks={() => onOpenBlocks(day.id)}
                   onEdit={() => onEditDay(day.id, day.name)}
+                  onDelete={() => onDeleteDay(day.id, day.name)}
                 />
               ))
             )}
@@ -87,9 +90,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    padding: Spacing.md,
-    gap: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    paddingTop: 0,
     paddingBottom: Spacing.xxl,
+    gap: Spacing.md,
   },
   context: {
     gap: Spacing.xs,
@@ -97,6 +101,8 @@ const styles = StyleSheet.create({
   planName: {
     textAlign: 'left',
     opacity: 1,
+    fontSize: 18,
+    fontWeight: '700',
   },
   section: {
     gap: Spacing.sm,

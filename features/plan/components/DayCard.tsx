@@ -14,11 +14,22 @@ type DayCardProps = {
   onMoveDown: () => void;
   onOpenBlocks: () => void;
   onEdit: () => void;
+  onDelete: () => void;
 };
 
-export function DayCard({ day, onMoveUp, onMoveDown, onOpenBlocks, onEdit }: DayCardProps) {
+export function DayCard({
+  day,
+  onMoveUp,
+  onMoveDown,
+  onOpenBlocks,
+  onEdit,
+  onDelete,
+}: DayCardProps) {
   const colorScheme = useColorScheme();
-  const iconColor = colorScheme === 'dark' ? Colors.dark.icon : Colors.light.icon;
+  const isDark = colorScheme === 'dark';
+  const iconColor = isDark ? Colors.dark.icon : Colors.light.icon;
+  const editColor = isDark ? '#60a5fa' : '#2563eb';
+  const deleteColor = isDark ? '#f87171' : '#dc2626';
 
   return (
     <Pressable
@@ -34,7 +45,6 @@ export function DayCard({ day, onMoveUp, onMoveDown, onOpenBlocks, onEdit }: Day
           <MaterialIcons name="chevron-right" size={22} color={iconColor} />
         </View>
         <View style={styles.actionsRow}>
-          <MaterialIcons name="drag-handle" size={18} color={iconColor} />
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Move day up"
@@ -43,7 +53,7 @@ export function DayCard({ day, onMoveUp, onMoveDown, onOpenBlocks, onEdit }: Day
               onMoveUp();
             }}
             style={({ pressed }) => [styles.iconButton, pressed && styles.iconPressed]}>
-            <MaterialIcons name="keyboard-arrow-up" size={20} color={iconColor} />
+            <MaterialIcons name="arrow-upward" size={18} color={iconColor} />
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -53,7 +63,7 @@ export function DayCard({ day, onMoveUp, onMoveDown, onOpenBlocks, onEdit }: Day
               onMoveDown();
             }}
             style={({ pressed }) => [styles.iconButton, pressed && styles.iconPressed]}>
-            <MaterialIcons name="keyboard-arrow-down" size={20} color={iconColor} />
+            <MaterialIcons name="arrow-downward" size={18} color={iconColor} />
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -63,7 +73,17 @@ export function DayCard({ day, onMoveUp, onMoveDown, onOpenBlocks, onEdit }: Day
               onEdit();
             }}
             style={({ pressed }) => [styles.iconButton, pressed && styles.iconPressed]}>
-            <MaterialIcons name="more-vert" size={20} color={iconColor} />
+            <MaterialIcons name="edit" size={18} color={editColor} />
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Delete day"
+            onPress={(event) => {
+              event.stopPropagation();
+              onDelete();
+            }}
+            style={({ pressed }) => [styles.iconButton, pressed && styles.iconPressed]}>
+            <MaterialIcons name="delete" size={18} color={deleteColor} />
           </Pressable>
         </View>
       </Card>
