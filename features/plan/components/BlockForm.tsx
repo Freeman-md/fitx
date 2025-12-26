@@ -1,6 +1,7 @@
 import { StyleSheet, TextInput, View } from 'react-native';
 
-import { Button } from '@/components/ui/button';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Spacing } from '@/components/ui/spacing';
 
 type BlockFormProps = {
@@ -8,8 +9,6 @@ type BlockFormProps = {
   durationMinutes: string;
   onChangeTitle: (value: string) => void;
   onChangeDuration: (value: string) => void;
-  onSubmit: () => void;
-  submitLabel: string;
 };
 
 export function BlockForm({
@@ -17,25 +16,29 @@ export function BlockForm({
   durationMinutes,
   onChangeTitle,
   onChangeDuration,
-  onSubmit,
-  submitLabel,
 }: BlockFormProps) {
+  const colorScheme = useColorScheme();
+  const borderColor = colorScheme === 'dark' ? '#374151' : '#e5e7eb';
+  const textColor = colorScheme === 'dark' ? Colors.dark.text : Colors.light.text;
+  const placeholderColor = colorScheme === 'dark' ? Colors.dark.icon : Colors.light.icon;
+
   return (
     <View style={styles.section}>
       <TextInput
         placeholder="Block title"
+        placeholderTextColor={placeholderColor}
         value={title}
         onChangeText={onChangeTitle}
-        style={styles.input}
+        style={[styles.input, { borderColor, color: textColor }]}
       />
       <TextInput
         placeholder="Duration minutes"
+        placeholderTextColor={placeholderColor}
         value={durationMinutes}
         onChangeText={onChangeDuration}
         keyboardType="number-pad"
-        style={styles.input}
+        style={[styles.input, { borderColor, color: textColor }]}
       />
-      <Button label={submitLabel} onPress={onSubmit} />
     </View>
   );
 }
@@ -46,8 +49,8 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
     borderRadius: 8,
+    minHeight: 44,
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
   },

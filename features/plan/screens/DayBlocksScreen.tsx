@@ -10,12 +10,7 @@ export default function DayBlocksScreen() {
     currentPlan,
     currentDay,
     orderedBlocks,
-    draftTitle,
-    draftDuration,
     editingBlock,
-    setDraftTitle,
-    setDraftDuration,
-    addBlockWithValidation,
     saveBlockEdit,
     confirmDeleteBlock,
     beginBlockEdit,
@@ -38,12 +33,8 @@ export default function DayBlocksScreen() {
         plan={currentPlan}
         day={currentDay}
         blocks={orderedBlocks}
-        draftTitle={draftTitle}
-        draftDuration={draftDuration}
         editingBlock={editingBlock}
-        onChangeDraftTitle={setDraftTitle}
-        onChangeDraftDuration={setDraftDuration}
-        onAddBlock={() => void addBlockWithValidation()}
+        onAddBlock={() => router.push(`/plans/${planId}/days/${dayId}/blocks/create`)}
         onCancelEdit={cancelBlockEdit}
         onSaveEdit={() => void saveBlockEdit()}
         onStartEdit={beginBlockEdit}

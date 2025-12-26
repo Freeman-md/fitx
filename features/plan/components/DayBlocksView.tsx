@@ -3,8 +3,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Block, WorkoutDay, WorkoutPlan } from '@/data/models';
 import { BlockCard } from '@/features/plan/components/BlockCard';
-import { BlockForm } from '@/features/plan/components/BlockForm';
 import { Button } from '@/components/ui/button';
+import { Fab } from '@/components/ui/fab';
 import { PageTitle, SecondaryText } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
 
@@ -18,11 +18,7 @@ type DayBlocksViewProps = {
   plan: WorkoutPlan | null;
   day: WorkoutDay | null;
   blocks: Block[];
-  draftTitle: string;
-  draftDuration: string;
   editingBlock: EditableBlock | null;
-  onChangeDraftTitle: (value: string) => void;
-  onChangeDraftDuration: (value: string) => void;
   onAddBlock: () => void;
   onCancelEdit: () => void;
   onSaveEdit: () => void;
@@ -40,11 +36,7 @@ export function DayBlocksView({
   plan,
   day,
   blocks,
-  draftTitle,
-  draftDuration,
   editingBlock,
-  onChangeDraftTitle,
-  onChangeDraftDuration,
   onAddBlock,
   onCancelEdit,
   onSaveEdit,
@@ -70,21 +62,12 @@ export function DayBlocksView({
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
+      <View style={styles.screen}>
+        <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
         <PageTitle>{day.name}</PageTitle>
         <SecondaryText style={styles.subtitle}>
           {plan.name} · {plan.gymType ?? 'No gym type'}
         </SecondaryText>
-        <View style={styles.section}>
-          <BlockForm
-            title={draftTitle}
-            durationMinutes={draftDuration}
-            onChangeTitle={onChangeDraftTitle}
-            onChangeDuration={onChangeDraftDuration}
-            onSubmit={onAddBlock}
-            submitLabel="Add Block"
-          />
-        </View>
         <View style={styles.section}>
           {blocks.length === 0 ? (
             <SecondaryText style={styles.centeredText}>No blocks yet.</SecondaryText>
@@ -109,7 +92,9 @@ export function DayBlocksView({
             ))
           )}
         </View>
-      </ScrollView>
+        </ScrollView>
+        <Fab accessibilityLabel="Add block" onPress={onAddBlock} />
+      </View>
     </SafeAreaView>
   );
 }
@@ -118,9 +103,13 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  screen: {
+    flex: 1,
+  },
   container: {
     padding: Spacing.md,
     gap: Spacing.md,
+    paddingBottom: Spacing.xxl,
   },
   section: {
     gap: Spacing.sm,

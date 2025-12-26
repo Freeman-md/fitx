@@ -15,12 +15,9 @@ export default function BlockExercisesScreen() {
     currentDay,
     currentBlock,
     orderedExercises,
-    exerciseDraft,
     exerciseBeingEdited,
-    addExerciseWithValidation,
     beginExerciseEdit,
     saveExerciseEdit,
-    setDraftField,
     setEditingField,
     cancelExerciseEdit,
     deleteExercise,
@@ -41,11 +38,11 @@ export default function BlockExercisesScreen() {
         day={currentDay}
         block={currentBlock}
         exercises={orderedExercises}
-        draft={exerciseDraft}
         editingExercise={exerciseBeingEdited}
-        onChangeDraftField={setDraftField}
         onChangeEditingField={setEditingField}
-        onAddExercise={() => void addExerciseWithValidation()}
+        onAddExercise={() =>
+          router.push(`/plans/${planId}/days/${dayId}/blocks/${blockId}/exercises/create`)
+        }
         onSaveEdit={() => void saveExerciseEdit()}
         onCancelEdit={cancelExerciseEdit}
         onStartEdit={beginExerciseEdit}

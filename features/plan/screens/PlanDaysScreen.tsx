@@ -9,12 +9,9 @@ export default function PlanDaysScreen() {
   const {
     plan,
     orderedDays,
-    newDayName,
-    setNewDayName,
     editingDay,
     beginDayEdit,
     setEditingName,
-    addDayWithValidation,
     saveDayName,
     confirmDeleteDay,
     moveDay,
@@ -35,9 +32,7 @@ export default function PlanDaysScreen() {
         gymType={plan?.gymType}
         days={orderedDays}
         editingDay={editingDay}
-        newDayName={newDayName}
-        onChangeNewDayName={setNewDayName}
-        onAddDay={() => void addDayWithValidation()}
+        onAddDay={() => router.push(`/plans/${planId}/days/create`)}
         onChangeEditingName={setEditingName}
         onCancelEdit={cancelDayEdit}
         onSaveEdit={() => void saveDayName()}

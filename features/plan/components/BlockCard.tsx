@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { PrimaryText, SecondaryText } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 type BlockCardProps = {
   block: Block;
@@ -37,6 +39,10 @@ export function BlockCard({
   onStartEdit,
   onDelete,
 }: BlockCardProps) {
+  const colorScheme = useColorScheme();
+  const borderColor = colorScheme === 'dark' ? '#374151' : '#e5e7eb';
+  const textColor = colorScheme === 'dark' ? Colors.dark.text : Colors.light.text;
+
   return (
     <Card style={styles.card}>
       {isEditing ? (
@@ -44,13 +50,13 @@ export function BlockCard({
           <TextInput
             value={editingTitle}
             onChangeText={onChangeTitle}
-            style={styles.input}
+            style={[styles.input, { borderColor, color: textColor }]}
           />
           <TextInput
             value={editingDuration}
             onChangeText={onChangeDuration}
             keyboardType="number-pad"
-            style={styles.input}
+            style={[styles.input, { borderColor, color: textColor }]}
           />
           <View style={styles.row}>
             <Button label="Cancel" variant="secondary" size="compact" onPress={onCancelEdit} />
@@ -96,8 +102,8 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
     borderRadius: 8,
+    minHeight: 44,
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
   },
