@@ -1,9 +1,9 @@
 import type { RefObject } from 'react';
-import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, TextInput, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
-import { PageTitle, PrimaryText, SecondaryText, SectionTitle } from '@/components/ui/text';
+import { FullScreenFocus } from '@/components/ui/focus-layout';
+import { PageTitle, PrimaryText, SecondaryText } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
 import type { CurrentExerciseInfo } from '@/features/session/utils/session-info';
 
@@ -46,104 +46,112 @@ export function TrainActiveSessionView({
   inputBackgroundColor,
   inputTextColor,
 }: TrainActiveSessionViewProps) {
+  if (!currentExerciseInfo) {
+    return (
+      <FullScreenFocus>
+        <SecondaryText style={styles.centeredText}>
+          Unable to load active session details.
+        </SecondaryText>
+      </FullScreenFocus>
+    );
+  }
+
+  if (isResting) {
+    return (
+      <FullScreenFocus>
+        <PrimaryText style={styles.restCountdown}>Rest: {restSecondsRemaining}s</PrimaryText>
+        <Button
+          label="Skip Rest"
+          onPress={onSkipRest}
+          variant="secondary"
+          style={styles.fullWidth}
+        />
+      </FullScreenFocus>
+    );
+  }
+
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <ScrollView
-        contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="handled"
-        alwaysBounceVertical={false}>
-        <PageTitle>Train</PageTitle>
-        <View style={styles.section}>
-          <SectionTitle>Active Session</SectionTitle>
-          {currentExerciseInfo ? (
-            <>
-              {isResting ? (
-                <View style={styles.restContainer}>
-                  <PrimaryText>Rest: {restSecondsRemaining}s</PrimaryText>
-                  <Button label="Skip Rest" onPress={onSkipRest} variant="secondary" />
-                </View>
-              ) : (
-                <>
-                  <PrimaryText>{currentExerciseInfo.name}</PrimaryText>
-                  <SecondaryText>
-                    Set {setNumber} of {currentExerciseInfo.totalSets}
-                  </SecondaryText>
-                  <SecondaryText>Target: {currentExerciseInfo.target}</SecondaryText>
-                  <View style={styles.inputRow}>
-                    <TextInput
-                      ref={inputRef}
-                      placeholder={
-                        currentExerciseInfo.usesTime ? 'Actual seconds' : 'Actual reps'
-                      }
-                      placeholderTextColor={inputPlaceholderColor}
-                      value={currentExerciseInfo.usesTime ? actualTimeInput : actualRepsInput}
-                      onChangeText={
-                        currentExerciseInfo.usesTime ? onChangeActualTime : onChangeActualReps
-                      }
-                      keyboardType="number-pad"
-                      style={[
-                        styles.input,
-                        inputBorderColor ? { borderColor: inputBorderColor } : null,
-                        inputBackgroundColor ? { backgroundColor: inputBackgroundColor } : null,
-                        inputTextColor ? { color: inputTextColor } : null,
-                      ]}
-                    />
-                  </View>
-                  <View style={styles.buttonStack}>
-                    <Button label="Complete Set" onPress={onCompleteSet} variant="primary" />
-                    <Button label="Skip Set" onPress={onSkipSet} variant="secondary" />
-                  </View>
-                </>
-              )}
-              <View style={styles.endSessionRow}>
-                <Button label="End Session" onPress={onEndSession} variant="destructive" />
-              </View>
-            </>
-          ) : (
-            <SecondaryText style={styles.centeredText}>
-              Unable to load active session details.
-            </SecondaryText>
-          )}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <FullScreenFocus>
+      <PageTitle style={styles.exerciseName}>{currentExerciseInfo.name}</PageTitle>
+      <PrimaryText style={styles.setCount}>
+        Set {setNumber} of {currentExerciseInfo.totalSets}
+      </PrimaryText>
+      <SecondaryText style={styles.targetText}>Target: {currentExerciseInfo.target}</SecondaryText>
+      <View style={styles.inputRow}>
+        <TextInput
+          ref={inputRef}
+          placeholder={currentExerciseInfo.usesTime ? 'Actual seconds' : 'Actual reps'}
+          placeholderTextColor={inputPlaceholderColor}
+          value={currentExerciseInfo.usesTime ? actualTimeInput : actualRepsInput}
+          onChangeText={currentExerciseInfo.usesTime ? onChangeActualTime : onChangeActualReps}
+          keyboardType="number-pad"
+          style={[
+            styles.input,
+            inputBorderColor ? { borderColor: inputBorderColor } : null,
+            inputBackgroundColor ? { backgroundColor: inputBackgroundColor } : null,
+            inputTextColor ? { color: inputTextColor } : null,
+          ]}
+        />
+      </View>
+      <View style={styles.buttonStack}>
+        <Button
+          label="Complete Set"
+          onPress={onCompleteSet}
+          variant="primary"
+          style={styles.fullWidth}
+        />
+        <Button
+          label="Skip Set"
+          onPress={onSkipSet}
+          variant="secondary"
+          style={styles.fullWidth}
+        />
+      </View>
+      <Button
+        label="End Session"
+        onPress={onEndSession}
+        variant="destructive"
+        size="compact"
+      />
+    </FullScreenFocus>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  container: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: Spacing.md,
-    gap: Spacing.md,
-  },
-  section: {
-    gap: Spacing.sm,
-  },
   inputRow: {
     width: '100%',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
+    borderRadius: 12,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    fontSize: 22,
+    textAlign: 'center',
   },
   buttonStack: {
-    gap: Spacing.sm,
-  },
-  restContainer: {
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  endSessionRow: {
-    marginTop: Spacing.sm,
+    gap: Spacing.md,
+    width: '100%',
   },
   centeredText: {
     textAlign: 'center',
+  },
+  exerciseName: {
+    fontSize: 32,
+    textAlign: 'center',
+  },
+  setCount: {
+    fontSize: 24,
+    textAlign: 'center',
+  },
+  targetText: {
+    textAlign: 'center',
+  },
+  restCountdown: {
+    fontSize: 28,
+  },
+  fullWidth: {
+    width: '100%',
   },
 });
