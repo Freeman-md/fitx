@@ -1,10 +1,13 @@
-import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Block, Exercise, WorkoutDay, WorkoutPlan } from '@/data/models';
 import { ExerciseCard } from '@/features/plan/components/ExerciseCard';
 import { ExerciseForm } from '@/features/plan/components/ExerciseForm';
 import type { ExerciseDraft } from '@/features/plan/utils/exercise-helpers';
+import { Button } from '@/components/ui/button';
+import { PageTitle, SecondaryText } from '@/components/ui/text';
+import { Spacing } from '@/components/ui/spacing';
 
 type EditingExercise = ExerciseDraft & {
   id: string;
@@ -51,8 +54,8 @@ export function BlockExercisesView({
     return (
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.container}>
-          <Text>Block not found.</Text>
-          <Button title="Back" onPress={onBack} />
+          <SecondaryText>Block not found.</SecondaryText>
+          <Button label="Back" onPress={onBack} variant="secondary" />
         </View>
       </SafeAreaView>
     );
@@ -61,10 +64,10 @@ export function BlockExercisesView({
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
-        <Text style={styles.title}>{block.title}</Text>
-        <Text style={styles.subtitle}>
+        <PageTitle>{block.title}</PageTitle>
+        <SecondaryText style={styles.subtitle}>
           {day.name} · {plan.name}
-        </Text>
+        </SecondaryText>
         <ExerciseForm
           name={draft.name}
           sets={draft.sets}
@@ -85,7 +88,7 @@ export function BlockExercisesView({
         />
         <View style={styles.section}>
           {exercises.length === 0 ? (
-            <Text>No exercises yet.</Text>
+            <SecondaryText style={styles.centeredText}>No exercises yet.</SecondaryText>
           ) : (
             exercises.map((exercise) =>
               editingExercise?.id === exercise.id ? (
@@ -132,21 +135,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    padding: 16,
-    gap: 16,
+    padding: Spacing.md,
+    gap: Spacing.md,
   },
-  title: {
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '600',
-    opacity: 0.7,
+  section: {
+    gap: Spacing.sm,
   },
   subtitle: {
     textAlign: 'center',
-    fontSize: 12,
-    opacity: 0.7,
   },
-  section: {
-    gap: 12,
+  centeredText: {
+    textAlign: 'center',
   },
 });

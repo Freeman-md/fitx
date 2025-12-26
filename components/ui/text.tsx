@@ -8,57 +8,65 @@ type StyledTextProps = TextProps & {
   children: React.ReactNode;
 };
 
+const useTextColors = () => {
+  const colorScheme = useColorScheme();
+  return {
+    primary: colorScheme === 'dark' ? Colors.dark.text : undefined,
+    secondary: colorScheme === 'dark' ? Colors.dark.icon : Colors.light.icon,
+  };
+};
+
+export function PageTitle({ children, style, ...props }: StyledTextProps) {
+  const { primary } = useTextColors();
+  return (
+    <Text style={[styles.pageTitle, primary ? { color: primary } : null, style]} {...props}>
+      {children}
+    </Text>
+  );
+}
+
 export function SectionTitle({ children, style, ...props }: StyledTextProps) {
-  const colorScheme = useColorScheme();
-  const textColor = colorScheme === 'dark' ? Colors.dark.text : undefined;
+  const { primary } = useTextColors();
   return (
-    <Text style={[styles.sectionTitle, textColor ? { color: textColor } : null, style]} {...props}>
+    <Text style={[styles.sectionTitle, primary ? { color: primary } : null, style]} {...props}>
       {children}
     </Text>
   );
 }
 
-export function RowText({ children, style, ...props }: StyledTextProps) {
-  const colorScheme = useColorScheme();
-  const textColor = colorScheme === 'dark' ? Colors.dark.text : undefined;
+export function PrimaryText({ children, style, ...props }: StyledTextProps) {
+  const { primary } = useTextColors();
   return (
-    <Text style={[styles.rowText, textColor ? { color: textColor } : null, style]} {...props}>
+    <Text style={[styles.primaryText, primary ? { color: primary } : null, style]} {...props}>
       {children}
     </Text>
   );
 }
 
-export function StatusText({ children, style, ...props }: StyledTextProps) {
-  const colorScheme = useColorScheme();
-  const textColor = colorScheme === 'dark' ? Colors.dark.text : undefined;
+export function SecondaryText({ children, style, ...props }: StyledTextProps) {
+  const { secondary } = useTextColors();
   return (
-    <Text style={[styles.statusText, textColor ? { color: textColor } : null, style]} {...props}>
-      {children}
-    </Text>
-  );
-}
-
-export function DetailText({ children, style, ...props }: StyledTextProps) {
-  const colorScheme = useColorScheme();
-  const detailColor = colorScheme === 'dark' ? Colors.dark.icon : '#555';
-  return (
-    <Text style={[styles.detailText, { color: detailColor }, style]} {...props}>
+    <Text style={[styles.secondaryText, secondary ? { color: secondary } : null, style]} {...props}>
       {children}
     </Text>
   );
 }
 
 const styles = StyleSheet.create({
+  pageTitle: {
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
+    opacity: 0.7,
+  },
   sectionTitle: {
+    fontSize: 14,
     fontWeight: '600',
   },
-  rowText: {
+  primaryText: {
     fontSize: 14,
   },
-  statusText: {
-    textAlign: 'center',
-  },
-  detailText: {
+  secondaryText: {
     fontSize: 12,
   },
 });

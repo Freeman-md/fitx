@@ -1,6 +1,9 @@
-import { Button, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Button } from '@/components/ui/button';
+import { PageTitle } from '@/components/ui/text';
+import { Spacing } from '@/components/ui/spacing';
 type CreatePlanViewProps = {
   nameInput: string;
   gymTypeInput: string;
@@ -21,7 +24,7 @@ export function CreatePlanView({
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
-        <Text style={styles.title}>New Plan</Text>
+        <PageTitle>New Plan</PageTitle>
         <View style={styles.section}>
           <TextInput
             placeholder="Plan name"
@@ -36,8 +39,8 @@ export function CreatePlanView({
             style={styles.input}
           />
           <View style={styles.row}>
-            <Button title="Cancel" onPress={onCancel} />
-            <Button title="Save Plan" onPress={onSave} />
+            <Button label="Cancel" variant="secondary" onPress={onCancel} />
+            <Button label="Save Plan" onPress={onSave} />
           </View>
         </View>
       </ScrollView>
@@ -50,28 +53,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    padding: 16,
-    gap: 16,
-  },
-  title: {
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '600',
-    opacity: 0.7,
+    padding: Spacing.md,
+    gap: Spacing.md,
   },
   section: {
-    gap: 12,
+    gap: Spacing.sm,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: Spacing.sm,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: 8,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
   },
 });

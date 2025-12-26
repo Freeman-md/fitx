@@ -1,16 +1,17 @@
 import type { RefObject } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { WorkoutPlan } from '@/data/models';
-import { RowText, SectionTitle, StatusText } from '@/components/ui/text';
+import { PageTitle, PrimaryText, SecondaryText, SectionTitle } from '@/components/ui/text';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Spacing } from '@/components/ui/spacing';
 import type { CurrentExerciseInfo } from '@/features/session/utils/session-info';
 import type { TrainColors } from '@/features/session/utils/train-theme';
-import { ActionButton } from '@/features/session/components/ActionButton';
 
 type TrainScreenViewProps = {
   colors: TrainColors;
-  isDark: boolean;
   inputRef: RefObject<TextInput | null>;
   hasActiveSession: boolean;
   currentExerciseInfo: CurrentExerciseInfo | null;
@@ -33,7 +34,6 @@ type TrainScreenViewProps = {
 
 export function TrainScreenView({
   colors,
-  isDark,
   inputRef,
   hasActiveSession,
   currentExerciseInfo,
@@ -59,7 +59,7 @@ export function TrainScreenView({
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
         alwaysBounceVertical={false}>
-        <Text style={[styles.pageTitle, isDark ? styles.pageTitleDark : null]}>Train</Text>
+        <PageTitle>Train</PageTitle>
         {hasActiveSession ? (
           <View style={styles.section}>
             <SectionTitle>Active Session</SectionTitle>
@@ -67,21 +67,20 @@ export function TrainScreenView({
               <>
                 {isResting ? (
                   <View style={styles.restContainer}>
-                    <StatusText>Rest: {restSecondsRemaining}s</StatusText>
-                    <ActionButton
+                    <PrimaryText>Rest: {restSecondsRemaining}s</PrimaryText>
+                    <Button
                       label="Skip Rest"
                       onPress={onSkipRest}
                       variant="secondary"
-                      colors={colors}
                     />
                   </View>
                 ) : (
                   <>
-                    <StatusText>{currentExerciseInfo.name}</StatusText>
-                    <StatusText>
+                    <PrimaryText>{currentExerciseInfo.name}</PrimaryText>
+                    <SecondaryText>
                       Set {setNumber} of {currentExerciseInfo.totalSets}
-                    </StatusText>
-                    <StatusText>Target: {currentExerciseInfo.target}</StatusText>
+                    </SecondaryText>
+                    <SecondaryText>Target: {currentExerciseInfo.target}</SecondaryText>
                     <View style={styles.inputRow}>
                       <TextInput
                         ref={inputRef}
@@ -101,54 +100,51 @@ export function TrainScreenView({
                       />
                     </View>
                     <View style={styles.buttonStack}>
-                      <ActionButton
+                      <Button
                         label="Complete Set"
                         onPress={onCompleteSet}
                         variant="primary"
-                        colors={colors}
                       />
-                      <ActionButton
+                      <Button
                         label="Skip Set"
                         onPress={onSkipSet}
                         variant="secondary"
-                        colors={colors}
                       />
                     </View>
                   </>
                 )}
                 <View style={styles.endSessionRow}>
-                  <ActionButton
+                  <Button
                     label="End Session"
                     onPress={onEndSession}
                     variant="destructive"
-                    colors={colors}
                   />
                 </View>
               </>
             ) : (
-              <StatusText>Unable to load active session details.</StatusText>
+              <SecondaryText style={styles.centeredText}>
+                Unable to load active session details.
+              </SecondaryText>
             )}
           </View>
         ) : (
           <>
-            <StatusText>No active session</StatusText>
+            <SecondaryText style={styles.centeredText}>No active session</SecondaryText>
             {plans.length === 0 ? (
-              <StatusText>No plans available</StatusText>
+              <SecondaryText style={styles.centeredText}>No plans available</SecondaryText>
             ) : (
               <View style={styles.section}>
                 <SectionTitle>Plans</SectionTitle>
                 {plans.map((plan) => (
-                  <View
-                    key={plan.id}
-                    style={[styles.itemCard, isDark ? { borderColor: colors.border } : null]}>
-                    <RowText>{plan.name}</RowText>
-                    <ActionButton
+                  <Card key={plan.id} style={styles.itemCard}>
+                    <PrimaryText>{plan.name}</PrimaryText>
+                    <Button
                       label="Select"
                       onPress={() => onSelectPlan(plan.id)}
                       variant="secondary"
-                      colors={colors}
+                      size="compact"
                     />
-                  </View>
+                  </Card>
                 ))}
               </View>
             )}
@@ -156,20 +152,20 @@ export function TrainScreenView({
               <View style={styles.section}>
                 <SectionTitle>{selectedPlan.name} Days</SectionTitle>
                 {selectedPlan.days.length === 0 ? (
-                  <StatusText>Add at least one day to start a session.</StatusText>
+                  <SecondaryText style={styles.centeredText}>
+                    Add at least one day to start a session.
+                  </SecondaryText>
                 ) : (
                   selectedPlan.days.map((day) => (
-                    <View
-                      key={day.id}
-                      style={[styles.itemCard, isDark ? { borderColor: colors.border } : null]}>
-                      <RowText>{day.name}</RowText>
-                      <ActionButton
+                    <Card key={day.id} style={styles.itemCard}>
+                      <PrimaryText>{day.name}</PrimaryText>
+                      <Button
                         label="Start Session"
                         onPress={() => onStartSession(day.id)}
                         variant="primary"
-                        colors={colors}
+                        size="compact"
                       />
-                    </View>
+                    </Card>
                   ))
                 )}
               </View>
@@ -188,18 +184,11 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 16,
-    gap: 16,
+    padding: Spacing.md,
+    gap: Spacing.md,
   },
   section: {
-    gap: 12,
-  },
-  itemCard: {
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 10,
-    padding: 12,
-    gap: 12,
+    gap: Spacing.sm,
   },
   inputRow: {
     width: '100%',
@@ -207,27 +196,24 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: 8,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
   },
   buttonStack: {
-    gap: 12,
+    gap: Spacing.sm,
   },
   restContainer: {
     alignItems: 'center',
-    gap: 12,
+    gap: Spacing.sm,
   },
   endSessionRow: {
-    marginTop: 12,
+    marginTop: Spacing.sm,
   },
-  pageTitle: {
+  itemCard: {
+    width: '100%',
+  },
+  centeredText: {
     textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '600',
-    opacity: 0.7,
-  },
-  pageTitleDark: {
-    color: '#ECEDEE',
   },
 });

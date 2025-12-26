@@ -1,13 +1,13 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { HistoryListItem, HistorySessionDetail } from '@/features/history/utils/history-view';
-import { DetailText, RowText, SectionTitle, StatusText } from '@/components/ui/text';
+import { PageTitle, PrimaryText, SecondaryText, SectionTitle } from '@/components/ui/text';
+import { Spacing } from '@/components/ui/spacing';
 
 type HistoryScreenViewProps = {
   sessionItems: HistoryListItem[];
   selectedSession: HistorySessionDetail | null;
-  isDark: boolean;
   dividerColor: string;
   onSelectSession: (sessionId: string) => void;
 };
@@ -15,18 +15,15 @@ type HistoryScreenViewProps = {
 export function HistoryScreenView({
   sessionItems,
   selectedSession,
-  isDark,
   dividerColor,
   onSelectSession,
 }: HistoryScreenViewProps) {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
-        <Text style={[styles.pageTitle, isDark ? styles.pageTitleDark : null]}>
-          History
-        </Text>
+        <PageTitle>History</PageTitle>
         {sessionItems.length === 0 ? (
-          <StatusText>No completed sessions yet.</StatusText>
+          <SecondaryText style={styles.centeredText}>No completed sessions yet.</SecondaryText>
         ) : (
           <View style={styles.section}>
             <SectionTitle>Completed Sessions</SectionTitle>
@@ -35,26 +32,26 @@ export function HistoryScreenView({
                 key={session.id}
                 style={[styles.row, { borderBottomColor: dividerColor }]}
                 onPress={() => onSelectSession(session.id)}>
-                <RowText>{session.dateLabel}</RowText>
-                <RowText>{session.durationLabel}</RowText>
+                <PrimaryText>{session.dateLabel}</PrimaryText>
+                <PrimaryText>{session.durationLabel}</PrimaryText>
               </TouchableOpacity>
             ))}
           </View>
         )}
         {selectedSession ? (
           <View style={styles.section}>
-            <RowText>Started: {selectedSession.startedAt}</RowText>
-            <RowText>Ended: {selectedSession.endedAt}</RowText>
-            <RowText>Plan: {selectedSession.planName}</RowText>
-            <RowText>Day: {selectedSession.dayName}</RowText>
+            <PrimaryText>Started: {selectedSession.startedAt}</PrimaryText>
+            <PrimaryText>Ended: {selectedSession.endedAt}</PrimaryText>
+            <PrimaryText>Plan: {selectedSession.planName}</PrimaryText>
+            <PrimaryText>Day: {selectedSession.dayName}</PrimaryText>
             {selectedSession.blocks.map((block) => (
               <View key={block.id} style={styles.section}>
                 <SectionTitle>{block.title}</SectionTitle>
                 {block.exercises.map((exercise) => (
                   <View key={exercise.id} style={styles.section}>
-                    <RowText>{exercise.name}</RowText>
+                    <PrimaryText>{exercise.name}</PrimaryText>
                     {exercise.setLines.map((line) => (
-                      <DetailText key={line}>{line}</DetailText>
+                      <SecondaryText key={line}>{line}</SecondaryText>
                     ))}
                   </View>
                 ))}
@@ -69,26 +66,20 @@ export function HistoryScreenView({
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    gap: 16,
+    padding: Spacing.md,
+    gap: Spacing.md,
   },
   safeArea: {
     flex: 1,
   },
-  pageTitle: {
+  centeredText: {
     textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '600',
-    opacity: 0.7,
-  },
-  pageTitleDark: {
-    color: '#ECEDEE',
   },
   section: {
-    gap: 8,
+    gap: Spacing.sm,
   },
   row: {
-    paddingVertical: 8,
+    paddingVertical: Spacing.sm,
     borderBottomWidth: 1,
   },
 });

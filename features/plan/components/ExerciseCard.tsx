@@ -1,6 +1,10 @@
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import type { Exercise } from '@/data/models';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { PrimaryText, SecondaryText } from '@/components/ui/text';
+import { Spacing } from '@/components/ui/spacing';
 
 type ExerciseCardProps = {
   exercise: Exercise;
@@ -18,41 +22,35 @@ export function ExerciseCard({
   onDelete,
 }: ExerciseCardProps) {
   return (
-    <View style={styles.card}>
+    <Card style={styles.card}>
       <View style={styles.row}>
-        <Text style={styles.cardTitle}>{exercise.name || 'Untitled'}</Text>
-        <Text style={styles.cardMeta}>#{exercise.order}</Text>
+        <PrimaryText style={styles.cardTitle}>{exercise.name || 'Untitled'}</PrimaryText>
+        <SecondaryText style={styles.cardMeta}>#{exercise.order}</SecondaryText>
       </View>
       <View style={styles.row}>
-        <Button title="Up" onPress={onMoveUp} />
-        <Button title="Down" onPress={onMoveDown} />
-        <Button title="Edit" onPress={onEdit} />
-        <Button title="Delete" onPress={onDelete} />
+        <Button label="Up" variant="secondary" size="compact" onPress={onMoveUp} />
+        <Button label="Down" variant="secondary" size="compact" onPress={onMoveDown} />
+        <Button label="Edit" variant="secondary" size="compact" onPress={onEdit} />
+        <Button label="Delete" variant="destructive" size="compact" onPress={onDelete} />
       </View>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 10,
-    padding: 12,
-    gap: 12,
+    gap: Spacing.sm,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: Spacing.sm,
   },
   cardTitle: {
-    fontSize: 16,
     fontWeight: '600',
   },
   cardMeta: {
-    fontSize: 12,
     opacity: 0.7,
   },
 });

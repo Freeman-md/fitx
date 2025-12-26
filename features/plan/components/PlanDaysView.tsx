@@ -1,10 +1,13 @@
-import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { WorkoutDay } from '@/data/models';
 import type { DayEdit } from '@/features/plan/hooks/use-plan-days';
 import { DayCard } from '@/features/plan/components/DayCard';
 import { DayForm } from '@/features/plan/components/DayForm';
+import { Button } from '@/components/ui/button';
+import { PageTitle, PrimaryText, SecondaryText } from '@/components/ui/text';
+import { Spacing } from '@/components/ui/spacing';
 
 type PlanDaysViewProps = {
   planName?: string;
@@ -49,8 +52,8 @@ export function PlanDaysView({
     return (
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.container}>
-          <Text>Plan not found.</Text>
-          <Button title="Back to Plans" onPress={onBack} />
+          <SecondaryText>Plan not found.</SecondaryText>
+          <Button label="Back to Plans" onPress={onBack} variant="secondary" />
         </View>
       </SafeAreaView>
     );
@@ -59,8 +62,8 @@ export function PlanDaysView({
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
-        <Text style={styles.title}>{planName}</Text>
-        {gymType ? <Text style={styles.subtitle}>{gymType}</Text> : null}
+        <PageTitle>{planName}</PageTitle>
+        {gymType ? <SecondaryText style={styles.subtitle}>{gymType}</SecondaryText> : null}
         <View style={styles.section}>
           <DayForm
             name={newDayName}
@@ -71,7 +74,7 @@ export function PlanDaysView({
         </View>
         <View style={styles.section}>
           {days.length === 0 ? (
-            <Text>No days yet.</Text>
+            <SecondaryText style={styles.centeredText}>No days yet.</SecondaryText>
           ) : (
             days.map((day) => (
               <DayCard
@@ -101,21 +104,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    padding: 16,
-    gap: 16,
+    padding: Spacing.md,
+    gap: Spacing.md,
   },
-  title: {
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '600',
-    opacity: 0.7,
+  section: {
+    gap: Spacing.sm,
   },
   subtitle: {
     textAlign: 'center',
-    fontSize: 13,
-    opacity: 0.7,
   },
-  section: {
-    gap: 12,
+  centeredText: {
+    textAlign: 'center',
   },
 });

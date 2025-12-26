@@ -10,8 +10,7 @@ export function useHistoryScreen() {
   const [plans, setPlans] = useState<WorkoutPlan[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const dividerColor = isDark ? '#374151' : '#ddd';
+  const dividerColor = colorScheme === 'dark' ? '#374151' : '#ddd';
 
   useEffect(() => {
     const loadHistorySources = async () => {
@@ -35,7 +34,6 @@ export function useHistoryScreen() {
     sessionItems: historyView.listItems,
     selectedSession: historyView.selectedDetail,
     selectSession: setSelectedSessionId,
-    isDark,
     dividerColor,
   };
 }

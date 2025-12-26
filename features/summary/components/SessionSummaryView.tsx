@@ -1,34 +1,32 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { SummaryViewModel } from '@/features/summary/utils/summary-view';
-import { RowText, SectionTitle } from '@/components/ui/text';
+import { PageTitle, PrimaryText, SectionTitle } from '@/components/ui/text';
+import { Spacing } from '@/components/ui/spacing';
 
 type SessionSummaryViewProps = {
   summary: SummaryViewModel | null;
-  isDark: boolean;
 };
 
-export function SessionSummaryView({ summary, isDark }: SessionSummaryViewProps) {
+export function SessionSummaryView({ summary }: SessionSummaryViewProps) {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
-        <Text style={[styles.pageTitle, isDark ? styles.pageTitleDark : null]}>
-          Session Summary
-        </Text>
+        <PageTitle>Session Summary</PageTitle>
         {summary ? (
           <View style={styles.section}>
-            <RowText>Plan: {summary.planName}</RowText>
-            <RowText>Day: {summary.dayName}</RowText>
-            <RowText>Started: {summary.startedAt}</RowText>
-            <RowText>Ended: {summary.endedAt}</RowText>
+            <PrimaryText>Plan: {summary.planName}</PrimaryText>
+            <PrimaryText>Day: {summary.dayName}</PrimaryText>
+            <PrimaryText>Started: {summary.startedAt}</PrimaryText>
+            <PrimaryText>Ended: {summary.endedAt}</PrimaryText>
             <SectionTitle style={styles.sectionTitle}>Exercises Completed</SectionTitle>
             {summary.exerciseNames.map((name) => (
-              <RowText key={name}>{name}</RowText>
+              <PrimaryText key={name}>{name}</PrimaryText>
             ))}
           </View>
         ) : (
-          <RowText>No completed session found.</RowText>
+          <PrimaryText>No completed session found.</PrimaryText>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -37,25 +35,16 @@ export function SessionSummaryView({ summary, isDark }: SessionSummaryViewProps)
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    gap: 16,
+    padding: Spacing.md,
+    gap: Spacing.md,
   },
   safeArea: {
     flex: 1,
   },
-  pageTitle: {
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '600',
-    opacity: 0.7,
-  },
-  pageTitleDark: {
-    color: '#ECEDEE',
-  },
   section: {
-    gap: 8,
+    gap: Spacing.sm,
   },
   sectionTitle: {
-    marginTop: 8,
+    marginTop: Spacing.sm,
   },
 });

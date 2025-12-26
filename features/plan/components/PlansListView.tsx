@@ -1,7 +1,11 @@
-import { Button, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { WorkoutPlan } from '@/data/models';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { PageTitle, PrimaryText, SecondaryText } from '@/components/ui/text';
+import { Spacing } from '@/components/ui/spacing';
 
 type PlansListViewProps = {
   plans: WorkoutPlan[];
@@ -19,20 +23,29 @@ export function PlansListView({
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
-        <Text style={styles.title}>Plans</Text>
-        <Button title="New Plan" onPress={onCreatePlan} />
+        <PageTitle>Plans</PageTitle>
+        <Button label="New Plan" onPress={onCreatePlan} />
         {plans.length === 0 ? (
-          <Text>No plans available.</Text>
+          <SecondaryText style={styles.centeredText}>No plans available.</SecondaryText>
         ) : (
           <View style={styles.section}>
             {plans.map((plan) => (
-              <View key={plan.id} style={styles.row}>
-                <Pressable style={styles.rowText} onPress={() => onSelectPlan(plan.id)}>
-                  <Text style={styles.planName}>{plan.name}</Text>
-                  {plan.gymType ? <Text style={styles.planMeta}>{plan.gymType}</Text> : null}
-                </Pressable>
-                <Button title="Delete" onPress={() => onDeletePlan(plan)} />
-              </View>
+              <Card key={plan.id}>
+                <View style={styles.row}>
+                  <Pressable style={styles.rowText} onPress={() => onSelectPlan(plan.id)}>
+                    <PrimaryText style={styles.planName}>{plan.name}</PrimaryText>
+                    {plan.gymType ? (
+                      <SecondaryText style={styles.planMeta}>{plan.gymType}</SecondaryText>
+                    ) : null}
+                  </Pressable>
+                  <Button
+                    label="Delete"
+                    variant="destructive"
+                    size="compact"
+                    onPress={() => onDeletePlan(plan)}
+                  />
+                </View>
+              </Card>
             ))}
           </View>
         )}
@@ -46,34 +59,26 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    padding: 16,
-    gap: 16,
-  },
-  title: {
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '600',
-    opacity: 0.7,
+    padding: Spacing.md,
+    gap: Spacing.md,
   },
   section: {
-    gap: 12,
+    gap: Spacing.sm,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: Spacing.sm,
   },
   rowText: {
     flex: 1,
-    gap: 4,
+    gap: Spacing.xs,
   },
   planName: {
-    fontSize: 16,
     fontWeight: '600',
   },
-  planMeta: {
-    fontSize: 13,
-    opacity: 0.7,
+  centeredText: {
+    textAlign: 'center',
   },
 });

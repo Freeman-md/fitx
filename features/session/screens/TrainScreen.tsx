@@ -34,7 +34,6 @@ export default function TrainScreen() {
   return (
     <TrainScreenView
       colors={theme.colors}
-      isDark={theme.isDark}
       inputRef={inputRef}
       hasActiveSession={hasActiveSession}
       currentExerciseInfo={currentExerciseInfo}

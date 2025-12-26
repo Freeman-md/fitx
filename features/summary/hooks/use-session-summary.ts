@@ -3,12 +3,9 @@ import { useEffect, useState } from 'react';
 import { loadLastCompletedSessionId, loadSessions, loadWorkoutPlans } from '@/data/storage';
 import { resolveSummarySources } from '@/features/summary/utils/summary-selectors';
 import { buildSummaryViewModel, type SummaryViewModel } from '@/features/summary/utils/summary-view';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export function useSessionSummary() {
   const [summary, setSummary] = useState<SummaryViewModel | null>(null);
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
 
   useEffect(() => {
     const loadSummaryData = async () => {
@@ -28,5 +25,5 @@ export function useSessionSummary() {
     void loadSummaryData();
   }, []);
 
-  return { summary, isDark };
+  return { summary };
 }

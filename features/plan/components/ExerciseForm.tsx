@@ -1,4 +1,7 @@
-import { Button, StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, View } from 'react-native';
+
+import { Button } from '@/components/ui/button';
+import { Spacing } from '@/components/ui/spacing';
 
 type ExerciseFormProps = {
   name: string;
@@ -41,7 +44,12 @@ export function ExerciseForm({
 }: ExerciseFormProps) {
   return (
     <View style={styles.section}>
-      <TextInput placeholder="Exercise name" value={name} onChangeText={onChangeName} style={styles.input} />
+      <TextInput
+        placeholder="Exercise name"
+        value={name}
+        onChangeText={onChangeName}
+        style={styles.input}
+      />
       <TextInput
         placeholder="Sets"
         value={sets}
@@ -79,8 +87,8 @@ export function ExerciseForm({
       />
       <TextInput placeholder="Notes" value={notes} onChangeText={onChangeNotes} style={styles.input} />
       <View style={styles.row}>
-        {onCancel ? <Button title="Cancel" onPress={onCancel} /> : null}
-        <Button title={submitLabel} onPress={onSubmit} />
+        {onCancel ? <Button label="Cancel" variant="secondary" onPress={onCancel} /> : null}
+        <Button label={submitLabel} onPress={onSubmit} />
       </View>
     </View>
   );
@@ -88,18 +96,18 @@ export function ExerciseForm({
 
 const styles = StyleSheet.create({
   section: {
-    gap: 12,
+    gap: Spacing.sm,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: Spacing.sm,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: 8,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
   },
 });

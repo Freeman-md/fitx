@@ -1,6 +1,10 @@
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, View } from 'react-native';
 
 import type { Block } from '@/data/models';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { PrimaryText, SecondaryText } from '@/components/ui/text';
+import { Spacing } from '@/components/ui/spacing';
 
 type BlockCardProps = {
   block: Block;
@@ -34,7 +38,7 @@ export function BlockCard({
   onDelete,
 }: BlockCardProps) {
   return (
-    <View style={styles.card}>
+    <Card style={styles.card}>
       {isEditing ? (
         <>
           <TextInput
@@ -49,58 +53,52 @@ export function BlockCard({
             style={styles.input}
           />
           <View style={styles.row}>
-            <Button title="Cancel" onPress={onCancelEdit} />
-            <Button title="Save" onPress={onSaveEdit} />
+            <Button label="Cancel" variant="secondary" size="compact" onPress={onCancelEdit} />
+            <Button label="Save" size="compact" onPress={onSaveEdit} />
           </View>
         </>
       ) : (
         <>
           <View style={styles.row}>
-            <Text style={styles.cardTitle}>{block.title}</Text>
-            <Text style={styles.cardMeta}>
+            <PrimaryText style={styles.cardTitle}>{block.title}</PrimaryText>
+            <SecondaryText style={styles.cardMeta}>
               {block.durationMinutes}m · #{block.order}
-            </Text>
+            </SecondaryText>
           </View>
           <View style={styles.row}>
-            <Button title="Up" onPress={onMoveUp} />
-            <Button title="Down" onPress={onMoveDown} />
-            <Button title="Exercises" onPress={onShowExercises} />
-            <Button title="Edit" onPress={onStartEdit} />
-            <Button title="Delete" onPress={onDelete} />
+            <Button label="Up" variant="secondary" size="compact" onPress={onMoveUp} />
+            <Button label="Down" variant="secondary" size="compact" onPress={onMoveDown} />
+            <Button label="Exercises" variant="secondary" size="compact" onPress={onShowExercises} />
+            <Button label="Edit" variant="secondary" size="compact" onPress={onStartEdit} />
+            <Button label="Delete" variant="destructive" size="compact" onPress={onDelete} />
           </View>
         </>
       )}
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 10,
-    padding: 12,
-    gap: 12,
+    gap: Spacing.sm,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: Spacing.sm,
   },
   cardTitle: {
-    fontSize: 16,
     fontWeight: '600',
   },
   cardMeta: {
-    fontSize: 12,
     opacity: 0.7,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: 8,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
   },
 });

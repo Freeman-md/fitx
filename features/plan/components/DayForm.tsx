@@ -1,4 +1,7 @@
-import { Button, StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, View } from 'react-native';
+
+import { Button } from '@/components/ui/button';
+import { Spacing } from '@/components/ui/spacing';
 
 type DayFormProps = {
   name: string;
@@ -16,20 +19,20 @@ export function DayForm({ name, onChangeName, onSubmit, submitLabel }: DayFormPr
         onChangeText={onChangeName}
         style={styles.input}
       />
-      <Button title={submitLabel} onPress={onSubmit} />
+      <Button label={submitLabel} onPress={onSubmit} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   section: {
-    gap: 12,
+    gap: Spacing.sm,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: 8,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
   },
 });

@@ -1,9 +1,12 @@
-import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Block, WorkoutDay, WorkoutPlan } from '@/data/models';
 import { BlockCard } from '@/features/plan/components/BlockCard';
 import { BlockForm } from '@/features/plan/components/BlockForm';
+import { Button } from '@/components/ui/button';
+import { PageTitle, SecondaryText } from '@/components/ui/text';
+import { Spacing } from '@/components/ui/spacing';
 
 type EditableBlock = {
   id: string;
@@ -58,8 +61,8 @@ export function DayBlocksView({
     return (
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.container}>
-          <Text>Day not found.</Text>
-          <Button title="Back" onPress={onBack} />
+          <SecondaryText>Day not found.</SecondaryText>
+          <Button label="Back" onPress={onBack} variant="secondary" />
         </View>
       </SafeAreaView>
     );
@@ -68,10 +71,10 @@ export function DayBlocksView({
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
-        <Text style={styles.title}>{day.name}</Text>
-        <Text style={styles.subtitle}>
+        <PageTitle>{day.name}</PageTitle>
+        <SecondaryText style={styles.subtitle}>
           {plan.name} · {plan.gymType ?? 'No gym type'}
-        </Text>
+        </SecondaryText>
         <View style={styles.section}>
           <BlockForm
             title={draftTitle}
@@ -84,7 +87,7 @@ export function DayBlocksView({
         </View>
         <View style={styles.section}>
           {blocks.length === 0 ? (
-            <Text>No blocks yet.</Text>
+            <SecondaryText style={styles.centeredText}>No blocks yet.</SecondaryText>
           ) : (
             blocks.map((block) => (
               <BlockCard
@@ -116,21 +119,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    padding: 16,
-    gap: 16,
+    padding: Spacing.md,
+    gap: Spacing.md,
   },
-  title: {
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: '600',
-    opacity: 0.7,
+  section: {
+    gap: Spacing.sm,
   },
   subtitle: {
     textAlign: 'center',
-    fontSize: 12,
-    opacity: 0.7,
   },
-  section: {
-    gap: 12,
+  centeredText: {
+    textAlign: 'center',
   },
 });
