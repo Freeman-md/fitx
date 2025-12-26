@@ -46,6 +46,10 @@ export async function loadWorkoutPlans(): Promise<WorkoutPlan[]> {
 
 export async function saveSession(session: Session): Promise<void> {
   const sessions = await loadSessions();
+  const existing = sessions.find((item) => item.id === session.id);
+  if (existing?.status === SessionStatus.Completed) {
+    return;
+  }
   const next = sessions.filter((item) => item.id !== session.id);
   next.push(session);
   await saveSessions(next);
@@ -78,7 +82,21 @@ export async function ensureSingleActiveSession(): Promise<Session | null> {
 }
 
 export async function saveSessions(sessions: Session[]): Promise<void> {
-  const normalized = normalizeActiveSessions(sessions);
+  const stored = await loadSessions();
+  const completedById = new Map(
+    stored.filter((session) => session.status === SessionStatus.Completed).map((session) => [
+      session.id,
+      session,
+    ])
+  );
+  const merged = sessions.map((session) => completedById.get(session.id) ?? session);
+  const mergedIds = new Set(merged.map((session) => session.id));
+  for (const session of completedById.values()) {
+    if (!mergedIds.has(session.id)) {
+      merged.push(session);
+    }
+  }
+  const normalized = normalizeActiveSessions(merged);
   await AsyncStorage.setItem(SESSIONS_KEY, JSON.stringify(normalized));
 }
 
