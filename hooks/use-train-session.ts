@@ -39,8 +39,6 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
       setPlans(storedPlans);
       setActiveSession(storedActiveSession);
 
-      // eslint-disable-next-line no-console
-      console.log('active session check', storedActiveSession);
     };
 
     void loadData();
@@ -89,8 +87,6 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
     const session = await startSession(plan, day);
     setActiveSession(session);
 
-    // eslint-disable-next-line no-console
-    console.log('session started', session);
   };
 
   const handleSetAction = async (markCompleted: boolean) => {
@@ -125,8 +121,6 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
     setActualRepsInput('');
     setActualTimeInput('');
 
-    // eslint-disable-next-line no-console
-    console.log('session progress saved', nextSession);
 
     if (nextSession.status === SessionStatus.Active) {
       const restSeconds = currentExerciseInfo?.restSeconds ?? 0;
