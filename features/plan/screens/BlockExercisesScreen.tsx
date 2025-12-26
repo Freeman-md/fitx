@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 
@@ -35,6 +35,13 @@ export default function BlockExercisesScreen() {
   } = useBlockExercisesScreen(planId, dayId, blockId);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [createMode, setCreateMode] = useState<'reps' | 'time'>('reps');
+  const [editMode, setEditMode] = useState<'reps' | 'time'>('reps');
+
+  useEffect(() => {
+    if (exerciseBeingEdited) {
+      setEditMode(exerciseBeingEdited.timeSeconds ? 'time' : 'reps');
+    }
+  }, [exerciseBeingEdited]);
 
   const closeAddExerciseSheet = () => {
     setIsAddOpen(false);
@@ -63,7 +70,7 @@ export default function BlockExercisesScreen() {
     <>
       <Stack.Screen
         options={{
-          title: currentBlock?.title ? `Block: ${currentBlock.title}` : 'Block',
+          title: 'Block Details',
           headerBackTitle: 'Back',
           headerBackTitleVisible: true,
         }}
@@ -73,12 +80,8 @@ export default function BlockExercisesScreen() {
         day={currentDay}
         block={currentBlock}
         exercises={orderedExercises}
-        editingExercise={exerciseBeingEdited}
-        onChangeEditingField={setEditingField}
         onAddExercise={() => setIsAddOpen(true)}
-        onSaveEdit={() => void saveExerciseEdit()}
-        onCancelEdit={cancelExerciseEdit}
-        onStartEdit={beginExerciseEdit}
+        onEditExercise={beginExerciseEdit}
         onDelete={(exerciseId) => void deleteExercise(exerciseId)}
         onMoveUp={(exerciseId) => void moveExercise(exerciseId, 'up')}
         onMoveDown={(exerciseId) => void moveExercise(exerciseId, 'down')}
@@ -121,6 +124,50 @@ export default function BlockExercisesScreen() {
           onChangeRestSeconds={(value) => setDraftField('restSeconds', value)}
           onChangeNotes={(value) => setDraftField('notes', value)}
         />
+      </BottomSheet>
+      <BottomSheet
+        visible={Boolean(exerciseBeingEdited)}
+        title="Edit Exercise"
+        onDismiss={cancelExerciseEdit}
+        footer={
+          <View style={styles.footer}>
+            <Button label="Save" onPress={() => void saveExerciseEdit()} style={styles.fullWidth} />
+            <Button
+              label="Cancel"
+              variant="secondary"
+              onPress={cancelExerciseEdit}
+              style={styles.fullWidth}
+            />
+          </View>
+        }>
+        {exerciseBeingEdited ? (
+          <ExerciseForm
+            name={exerciseBeingEdited.name}
+            sets={exerciseBeingEdited.sets}
+            repsMin={exerciseBeingEdited.repsMin}
+            repsMax={exerciseBeingEdited.repsMax}
+            timeSeconds={exerciseBeingEdited.timeSeconds}
+            restSeconds={exerciseBeingEdited.restSeconds}
+            notes={exerciseBeingEdited.notes}
+            mode={editMode}
+            onChangeMode={(mode) => {
+              setEditMode(mode);
+              if (mode === 'time') {
+                setEditingField('repsMin', '');
+                setEditingField('repsMax', '');
+              } else {
+                setEditingField('timeSeconds', '');
+              }
+            }}
+            onChangeName={(value) => setEditingField('name', value)}
+            onChangeSets={(value) => setEditingField('sets', value)}
+            onChangeRepsMin={(value) => setEditingField('repsMin', value)}
+            onChangeRepsMax={(value) => setEditingField('repsMax', value)}
+            onChangeTimeSeconds={(value) => setEditingField('timeSeconds', value)}
+            onChangeRestSeconds={(value) => setEditingField('restSeconds', value)}
+            onChangeNotes={(value) => setEditingField('notes', value)}
+          />
+        ) : null}
       </BottomSheet>
     </>
   );
