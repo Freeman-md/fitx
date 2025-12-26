@@ -12,6 +12,7 @@ type ButtonProps = {
   onPress: () => void | Promise<void>;
   variant?: ButtonVariant;
   size?: ButtonSize;
+  disabled?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
 };
@@ -21,6 +22,7 @@ export function Button({
   onPress,
   variant = 'primary',
   size = 'default',
+  disabled = false,
   style,
   textStyle,
 }: ButtonProps) {
@@ -32,14 +34,23 @@ export function Button({
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
+      disabled={disabled}
       style={({ pressed }) => [
         styles.base,
         sizingStyles,
         colors.container,
-        pressed && styles.pressed,
+        pressed && !disabled && styles.pressed,
+        disabled && styles.disabled,
         style,
       ]}>
-      <Text style={[styles.text, colors.text, size === 'compact' ? styles.textCompact : null, textStyle]}>
+      <Text
+        style={[
+          styles.text,
+          colors.text,
+          size === 'compact' ? styles.textCompact : null,
+          disabled && styles.textDisabled,
+          textStyle,
+        ]}>
         {label}
       </Text>
     </Pressable>
@@ -98,11 +109,17 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.85,
   },
+  disabled: {
+    opacity: 0.55,
+  },
   text: {
     fontSize: 16,
     fontWeight: '600',
   },
   textCompact: {
     fontSize: 14,
+  },
+  textDisabled: {
+    opacity: 0.9,
   },
 });

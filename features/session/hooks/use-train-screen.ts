@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, TextInput } from 'react-native';
 
 import { SessionStatus } from '@/data/models';
@@ -16,6 +16,14 @@ export function useTrainScreen(options: UseTrainScreenOptions = {}) {
   const inputRef = useRef<TextInput>(null);
 
   const hasActiveSession = isActiveSession(sessionState.activeSession);
+  const [selectedDayId, setSelectedDayId] = useState<string | null>(null);
+
+  const selectedDay = useMemo(() => {
+    if (!sessionState.selectedPlan || !selectedDayId) {
+      return null;
+    }
+    return sessionState.selectedPlan.days.find((day) => day.id === selectedDayId) ?? null;
+  }, [sessionState.selectedPlan, selectedDayId]);
 
   useEffect(() => {
     if (hasActiveSession && !sessionState.isResting) {
@@ -23,16 +31,27 @@ export function useTrainScreen(options: UseTrainScreenOptions = {}) {
     }
   }, [hasActiveSession, sessionState.isResting]);
 
-  const startSessionIfValid = (dayId: string) => {
-    const check = canStartSessionFromPlan(sessionState.selectedPlan, dayId);
+  useEffect(() => {
+    if (!sessionState.selectedPlan) {
+      setSelectedDayId(null);
+      return;
+    }
+    const stillValid = sessionState.selectedPlan.days.some((day) => day.id === selectedDayId);
+    if (!stillValid) {
+      setSelectedDayId(null);
+    }
+  }, [sessionState.selectedPlan, selectedDayId]);
+
+  const startSessionIfValid = () => {
+    if (!sessionState.selectedPlan || !selectedDay) {
+      return;
+    }
+    const check = canStartSessionFromPlan(sessionState.selectedPlan, selectedDay.id);
     if (!check.ok) {
       Alert.alert('Cannot start session', check.reason);
       return;
     }
-    if (!sessionState.selectedPlan) {
-      return;
-    }
-    void sessionState.startSessionForDay(sessionState.selectedPlan.id, dayId);
+    void sessionState.startSessionForDay(sessionState.selectedPlan.id, selectedDay.id);
   };
 
   const confirmEndSession = () => {
@@ -66,6 +85,9 @@ export function useTrainScreen(options: UseTrainScreenOptions = {}) {
     theme,
     inputRef,
     setNumber: getSetNumber(sessionState.activePosition),
+    selectedDayId,
+    setSelectedDayId,
+    selectedDay,
     startSessionForDay: startSessionIfValid,
     endSessionPrompt: confirmEndSession,
     hasActiveSession,
