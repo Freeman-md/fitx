@@ -6,6 +6,7 @@ import { FullScreenFocus } from '@/components/ui/focus-layout';
 import { PageTitle, PrimaryText, SecondaryText } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
 import type { CurrentExerciseInfo } from '@/features/session/utils/session-info';
+import { RestView } from '@/features/session/components/RestView';
 
 type TrainActiveSessionViewProps = {
   inputRef: RefObject<TextInput | null>;
@@ -46,26 +47,18 @@ export function TrainActiveSessionView({
   inputBackgroundColor,
   inputTextColor,
 }: TrainActiveSessionViewProps) {
+  if (isResting) {
+    return (
+      <RestView secondsRemaining={restSecondsRemaining} onSkipRest={onSkipRest} />
+    );
+  }
+
   if (!currentExerciseInfo) {
     return (
       <FullScreenFocus>
         <SecondaryText style={styles.centeredText}>
           Unable to load active session details.
         </SecondaryText>
-      </FullScreenFocus>
-    );
-  }
-
-  if (isResting) {
-    return (
-      <FullScreenFocus>
-        <PrimaryText style={styles.restCountdown}>Rest: {restSecondsRemaining}s</PrimaryText>
-        <Button
-          label="Skip Rest"
-          onPress={onSkipRest}
-          variant="secondary"
-          style={styles.fullWidth}
-        />
       </FullScreenFocus>
     );
   }
@@ -147,9 +140,6 @@ const styles = StyleSheet.create({
   },
   targetText: {
     textAlign: 'center',
-  },
-  restCountdown: {
-    fontSize: 28,
   },
   fullWidth: {
     width: '100%',
