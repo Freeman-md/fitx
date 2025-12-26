@@ -1,5 +1,16 @@
-import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Animated,
+  Dimensions,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import type { ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { SectionTitle } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
@@ -19,19 +30,70 @@ export function BottomSheet({ visible, title, onDismiss, children, footer }: Bot
   const isDark = colorScheme === 'dark';
   const backgroundColor = isDark ? Colors.dark.background : Colors.light.background;
   const borderColor = isDark ? '#374151' : '#e5e7eb';
+  const screenHeight = Dimensions.get('window').height;
+  const overlayOpacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(screenHeight)).current;
+  const [isMounted, setIsMounted] = useState(visible);
+
+  useEffect(() => {
+    if (visible) {
+      setIsMounted(true);
+      translateY.setValue(screenHeight);
+      Animated.parallel([
+        Animated.timing(overlayOpacity, {
+          toValue: 1,
+          duration: 180,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateY, {
+          toValue: 0,
+          duration: 220,
+          useNativeDriver: true,
+        }),
+      ]).start();
+      return;
+    }
+
+    Animated.parallel([
+      Animated.timing(overlayOpacity, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateY, {
+        toValue: screenHeight,
+        duration: 220,
+        useNativeDriver: true,
+      }),
+    ]).start(({ finished }) => {
+      if (finished) {
+        setIsMounted(false);
+      }
+    });
+  }, [visible, overlayOpacity, translateY, screenHeight]);
+
+  if (!isMounted) {
+    return null;
+  }
+
+  const minHeight = Math.round(Dimensions.get('window').height * 0.4);
 
   return (
     <Modal
       transparent
-      visible={visible}
-      animationType="slide"
+      visible={isMounted}
+      animationType="none"
       onRequestClose={onDismiss}>
-      <View style={styles.overlay}>
+      <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onDismiss} />
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.sheetContainer}>
-          <View style={[styles.sheet, { backgroundColor, borderColor }]}>
+          <Animated.View
+            style={[
+              styles.sheet,
+              { backgroundColor, borderColor, minHeight, transform: [{ translateY }] },
+            ]}>
             <View style={styles.header}>
               <SectionTitle>{title}</SectionTitle>
             </View>
@@ -41,9 +103,9 @@ export function BottomSheet({ visible, title, onDismiss, children, footer }: Bot
             {footer ? (
               <View style={[styles.footer, { borderTopColor: borderColor }]}>{footer}</View>
             ) : null}
-          </View>
+          </Animated.View>
         </KeyboardAvoidingView>
-      </View>
+      </Animated.View>
     </Modal>
   );
 }
