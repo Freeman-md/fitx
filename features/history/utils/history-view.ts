@@ -12,7 +12,8 @@ export type HistoryListItem = {
 export type HistoryExerciseDetail = {
   id: string;
   name: string;
-  summary: string;
+  typeLabel: string;
+  setLines: string[];
 };
 
 export type HistoryBlockDetail = {
@@ -43,7 +44,14 @@ const formatDuration = (startedAt: string, endedAt?: string) => {
 };
 
 const formatSessionDate = (endedAt?: string) => {
-  return endedAt ? new Date(endedAt).toLocaleDateString() : 'Unknown date';
+  return endedAt
+    ? new Date(endedAt).toLocaleDateString(undefined, {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : 'Unknown date';
 };
 
 const formatTimeLabel = (timestamp?: string) => {
@@ -87,15 +95,52 @@ const buildExerciseNameLookup = (day: WorkoutDay | null) => {
   return names;
 };
 
-const summarizeSets = (exercise: Session['blocks'][number]['exercises'][number]) => {
-  const completedCount = exercise.sets.filter((set) => set.completed).length;
-  const skippedCount = exercise.sets.length - completedCount;
-  if (exercise.sets.length === 0) {
-    return 'No sets logged';
+const resolveExerciseType = (
+  exercise: Session['blocks'][number]['exercises'][number]
+): 'reps' | 'time' | 'unknown' => {
+  if (exercise.sets.some((set) => set.targetTimeSeconds || set.actualTimeSeconds)) {
+    return 'time';
   }
-  const completedLabel = `${completedCount} completed`;
-  const skippedLabel = skippedCount > 0 ? ` · ${skippedCount} skipped` : '';
-  return `${completedLabel}${skippedLabel}`;
+  if (exercise.sets.some((set) => set.targetReps || set.actualReps)) {
+    return 'reps';
+  }
+  return 'unknown';
+};
+
+const formatTargetLabel = (
+  set: Session['blocks'][number]['exercises'][number]['sets'][number],
+  type: 'reps' | 'time' | 'unknown'
+) => {
+  if (type === 'time') {
+    return set.targetTimeSeconds ? `${set.targetTimeSeconds}s` : '—';
+  }
+  if (type === 'reps') {
+    return set.targetReps ? `${set.targetReps} reps` : '—';
+  }
+  return '—';
+};
+
+const formatActualLabel = (
+  set: Session['blocks'][number]['exercises'][number]['sets'][number],
+  type: 'reps' | 'time' | 'unknown'
+) => {
+  if (type === 'time') {
+    return set.actualTimeSeconds ? `${set.actualTimeSeconds}s` : '—';
+  }
+  if (type === 'reps') {
+    return set.actualReps ? `${set.actualReps} reps` : '—';
+  }
+  return '—';
+};
+
+const formatSetLine = (
+  set: Session['blocks'][number]['exercises'][number]['sets'][number],
+  type: 'reps' | 'time' | 'unknown'
+) => {
+  const target = formatTargetLabel(set, type);
+  const actual = formatActualLabel(set, type);
+  const status = set.completed ? 'Completed' : 'Skipped';
+  return `Set ${set.setNumber} · Target ${target} · Actual ${actual} · ${status}`;
 };
 
 export const buildHistoryListItems = (sessions: Session[], plans: WorkoutPlan[]) => {
@@ -133,11 +178,17 @@ export const buildHistoryDetail = (
   const blocks = selectedSession.blocks.map((block) => ({
     id: block.blockId,
     title: blockTitleLookup.get(block.blockId) ?? 'Deleted block',
-    exercises: block.exercises.map((exercise) => ({
-      id: exercise.exerciseId,
-      name: exerciseNameLookup.get(exercise.exerciseId) ?? 'Unknown exercise',
-      summary: summarizeSets(exercise),
-    })),
+    exercises: block.exercises.map((exercise) => {
+      const type = resolveExerciseType(exercise);
+      const typeLabel =
+        type === 'reps' ? 'Reps-based' : type === 'time' ? 'Time-based' : 'Type unknown';
+      return {
+        id: exercise.exerciseId,
+        name: exerciseNameLookup.get(exercise.exerciseId) ?? 'Unknown exercise',
+        typeLabel,
+        setLines: exercise.sets.map((set) => formatSetLine(set, type)),
+      };
+    }),
   }));
 
   return {
