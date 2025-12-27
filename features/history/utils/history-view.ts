@@ -5,12 +5,14 @@ export type HistoryListItem = {
   id: string;
   dateLabel: string;
   durationLabel: string;
+  planName: string;
+  dayName: string;
 };
 
 export type HistoryExerciseDetail = {
   id: string;
   name: string;
-  setLines: string[];
+  summary: string;
 };
 
 export type HistoryBlockDetail = {
@@ -20,16 +22,12 @@ export type HistoryBlockDetail = {
 };
 
 export type HistorySessionDetail = {
-  startedAt: string;
-  endedAt?: string;
+  dateLabel: string;
+  timeRangeLabel: string;
+  durationLabel: string;
   planName: string;
   dayName: string;
   blocks: HistoryBlockDetail[];
-};
-
-export type HistoryViewModel = {
-  listItems: HistoryListItem[];
-  selectedDetail: HistorySessionDetail | null;
 };
 
 const formatDuration = (startedAt: string, endedAt?: string) => {
@@ -45,7 +43,20 @@ const formatDuration = (startedAt: string, endedAt?: string) => {
 };
 
 const formatSessionDate = (endedAt?: string) => {
-  return endedAt ? new Date(endedAt).toLocaleString() : 'Unknown date';
+  return endedAt ? new Date(endedAt).toLocaleDateString() : 'Unknown date';
+};
+
+const formatTimeLabel = (timestamp?: string) => {
+  if (!timestamp) {
+    return 'Unknown time';
+  }
+  return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+const formatTimeRange = (startedAt: string, endedAt?: string) => {
+  const startLabel = formatTimeLabel(startedAt);
+  const endLabel = endedAt ? formatTimeLabel(endedAt) : 'Unknown time';
+  return `${startLabel} → ${endLabel}`;
 };
 
 const getCompletedSessions = (sessions: Session[]) => {
@@ -76,51 +87,42 @@ const buildExerciseNameLookup = (day: WorkoutDay | null) => {
   return names;
 };
 
-const formatSets = (
-  exercise: Session['blocks'][number]['exercises'][number],
-  day: WorkoutDay | null
-) => {
-  const planExercise = day
-    ? day.blocks.flatMap((block) => block.exercises).find((item) => item.id === exercise.exerciseId)
-    : null;
-  const usesTime = Boolean(planExercise?.timeSeconds);
-  return exercise.sets.map((set) => {
-    const target = usesTime
-      ? planExercise?.timeSeconds
-        ? `${planExercise.timeSeconds}s`
-        : 'n/a'
-      : set.targetReps
-        ? `${set.targetReps} reps`
-        : 'n/a';
-    const actual = usesTime
-      ? set.actualTimeSeconds
-        ? `${set.actualTimeSeconds}s`
-        : 'n/a'
-      : set.actualReps
-        ? `${set.actualReps} reps`
-        : 'n/a';
-    return `Set ${set.setNumber}: target ${target}, actual ${actual}, ${
-      set.completed ? 'completed' : 'skipped'
-    }`;
+const summarizeSets = (exercise: Session['blocks'][number]['exercises'][number]) => {
+  const completedCount = exercise.sets.filter((set) => set.completed).length;
+  const skippedCount = exercise.sets.length - completedCount;
+  if (exercise.sets.length === 0) {
+    return 'No sets logged';
+  }
+  const completedLabel = `${completedCount} completed`;
+  const skippedLabel = skippedCount > 0 ? ` · ${skippedCount} skipped` : '';
+  return `${completedLabel}${skippedLabel}`;
+};
+
+export const buildHistoryListItems = (sessions: Session[], plans: WorkoutPlan[]) => {
+  const completedSessions = getCompletedSessions(sessions);
+  return completedSessions.map((session) => {
+    const plan = plans.find((item) => item.id === session.workoutPlanId) ?? null;
+    const day = plan?.days.find((item) => item.id === session.workoutDayId) ?? null;
+    return {
+      id: session.id,
+      dateLabel: formatSessionDate(session.endedAt),
+      durationLabel: formatDuration(session.startedAt, session.endedAt),
+      planName: plan?.name ?? 'Deleted plan',
+      dayName: day?.name ?? 'Deleted day',
+    };
   });
 };
 
-export const buildHistoryViewModel = (
+export const buildHistoryDetail = (
   sessions: Session[],
   plans: WorkoutPlan[],
   selectedSessionId: string | null
-): HistoryViewModel => {
+): HistorySessionDetail | null => {
   const completedSessions = getCompletedSessions(sessions);
-  const listItems = completedSessions.map((session) => ({
-    id: session.id,
-    dateLabel: formatSessionDate(session.endedAt),
-    durationLabel: formatDuration(session.startedAt, session.endedAt),
-  }));
-
   const selectedSession =
     completedSessions.find((session) => session.id === selectedSessionId) ?? null;
   if (!selectedSession) {
-    return { listItems, selectedDetail: null };
+    return null;
   }
 
   const plan = plans.find((item) => item.id === selectedSession.workoutPlanId) ?? null;
@@ -134,18 +136,16 @@ export const buildHistoryViewModel = (
     exercises: block.exercises.map((exercise) => ({
       id: exercise.exerciseId,
       name: exerciseNameLookup.get(exercise.exerciseId) ?? 'Unknown exercise',
-      setLines: formatSets(exercise, day),
+      summary: summarizeSets(exercise),
     })),
   }));
 
   return {
-    listItems,
-    selectedDetail: {
-      startedAt: selectedSession.startedAt,
-      endedAt: selectedSession.endedAt,
-      planName: plan?.name ?? 'Deleted plan',
-      dayName: day?.name ?? 'Deleted day',
-      blocks,
-    },
+    dateLabel: formatSessionDate(selectedSession.endedAt),
+    timeRangeLabel: formatTimeRange(selectedSession.startedAt, selectedSession.endedAt),
+    durationLabel: formatDuration(selectedSession.startedAt, selectedSession.endedAt),
+    planName: plan?.name ?? 'Deleted plan',
+    dayName: day?.name ?? 'Deleted day',
+    blocks,
   };
 };

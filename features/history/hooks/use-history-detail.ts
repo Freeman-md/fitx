@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 
 import type { Session, WorkoutPlan } from '@/data/models';
 import { loadSessions, loadWorkoutPlans } from '@/data/storage';
-import { buildHistoryListItems } from '@/features/history/utils/history-view';
+import { buildHistoryDetail } from '@/features/history/utils/history-view';
 
-export function useHistoryScreen() {
+export function useHistoryDetail(sessionId: string | undefined) {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [plans, setPlans] = useState<WorkoutPlan[]>([]);
 
@@ -21,9 +21,10 @@ export function useHistoryScreen() {
     void loadHistorySources();
   }, []);
 
-  const listItems = useMemo(() => buildHistoryListItems(sessions, plans), [sessions, plans]);
+  const detail = useMemo(
+    () => buildHistoryDetail(sessions, plans, sessionId ?? null),
+    [sessions, plans, sessionId]
+  );
 
-  return {
-    sessionItems: listItems,
-  };
+  return { detail };
 }
