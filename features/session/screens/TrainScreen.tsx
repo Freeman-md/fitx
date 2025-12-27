@@ -29,6 +29,7 @@ export default function TrainScreen() {
     setSelectedPlanId,
     setSelectedDayId,
     selectedPlanId,
+    refreshSessionState,
   } = useTrainScreen({
     onSessionCompleted: () => {
       router.push('/session-summary');
@@ -76,6 +77,7 @@ export default function TrainScreen() {
         }
       }}
       startDisabledReason={startDisabledReason}
+      onRefresh={() => void refreshSessionState()}
     />
   );
 }

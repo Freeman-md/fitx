@@ -1,5 +1,6 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState } from 'react';
 
 import type { WorkoutPlan } from '@/data/models';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ type TrainHomeViewProps = {
   onCreatePlan: () => void;
   onAddDays: () => void;
   startDisabledReason: string | null;
+  onRefresh: () => void;
 };
 
 export function TrainHomeView({
@@ -31,15 +33,31 @@ export function TrainHomeView({
   onCreatePlan,
   onAddDays,
   startDisabledReason,
+  onRefresh,
 }: TrainHomeViewProps) {
   const hasPlans = plans.length > 0;
   const hasSelectedPlan = Boolean(selectedPlan);
   const hasSelectedDay = Boolean(selectedDayId);
   const startDisabled = !hasSelectedPlan || !hasSelectedDay;
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.resolve(onRefresh());
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        alwaysBounceVertical
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={() => void handleRefresh()} />
+        }>
         <View style={styles.header}>
           <PageTitle>Train</PageTitle>
           <SecondaryText style={styles.subtitle}>Pick a plan and day to start.</SecondaryText>

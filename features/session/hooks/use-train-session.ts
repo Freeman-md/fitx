@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { Session, SessionStatus as SessionStatusType, WorkoutPlan } from '@/data/models';
 import { SessionStatus } from '@/data/models';
@@ -35,16 +35,16 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
     sessionId: activeSession?.id ?? null,
   });
 
-  useEffect(() => {
-    const loadInitialState = async () => {
-      const storedPlans = await loadWorkoutPlans();
-      const storedActiveSession = await loadActiveSession();
-      setPlans(storedPlans);
-      setActiveSession(storedActiveSession);
-    };
-
-    void loadInitialState();
+  const refreshSessionState = useCallback(async () => {
+    const storedPlans = await loadWorkoutPlans();
+    const storedActiveSession = await loadActiveSession();
+    setPlans(storedPlans);
+    setActiveSession(storedActiveSession);
   }, []);
+
+  useEffect(() => {
+    void refreshSessionState();
+  }, [refreshSessionState]);
 
   const selectedPlan = useMemo(
     () => selectPlanById(plans, selectedPlanId),
@@ -165,5 +165,6 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
     skipSet,
     skipRest: stopRestTimer,
     endSession,
+    refreshSessionState,
   };
 }

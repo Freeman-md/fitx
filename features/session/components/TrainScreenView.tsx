@@ -32,6 +32,7 @@ type TrainScreenViewProps = {
   onCreatePlan: () => void;
   onAddDays: () => void;
   startDisabledReason: string | null;
+  onRefresh: () => void;
 };
 
 export function TrainScreenView({
@@ -59,6 +60,7 @@ export function TrainScreenView({
   onCreatePlan,
   onAddDays,
   startDisabledReason,
+  onRefresh,
 }: TrainScreenViewProps) {
   if (hasActiveSession) {
     return (
@@ -95,6 +97,7 @@ export function TrainScreenView({
       onCreatePlan={onCreatePlan}
       onAddDays={onAddDays}
       startDisabledReason={startDisabledReason}
+      onRefresh={onRefresh}
     />
   );
 }

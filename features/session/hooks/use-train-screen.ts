@@ -91,5 +91,6 @@ export function useTrainScreen(options: UseTrainScreenOptions = {}) {
     startSessionForDay: startSessionIfValid,
     endSessionPrompt: confirmEndSession,
     hasActiveSession,
+    refreshSessionState: sessionState.refreshSessionState,
   };
 }

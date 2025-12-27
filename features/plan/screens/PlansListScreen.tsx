@@ -56,6 +56,7 @@ export default function PlansListScreen() {
         onCreatePlan={() => setIsCreateOpen(true)}
         onSelectPlan={(planId) => router.push(`/plans/${planId}`)}
         onDeletePlan={requestDeletePlan}
+        onRefresh={refreshPlans}
       />
       <BottomSheet
         visible={isCreateOpen}

@@ -1,5 +1,6 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState } from 'react';
 
 import type { HistoryListItem } from '@/features/history/utils/history-view';
 import { Card } from '@/components/ui/card';
@@ -10,15 +11,33 @@ import { Spacing } from '@/components/ui/spacing';
 type HistoryScreenViewProps = {
   sessionItems: HistoryListItem[];
   onSelectSession: (sessionId: string) => void;
+  onRefresh: () => void;
 };
 
 export function HistoryScreenView({
   sessionItems,
   onSelectSession,
+  onRefresh,
 }: HistoryScreenViewProps) {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.resolve(onRefresh());
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        alwaysBounceVertical
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={() => void handleRefresh()} />
+        }>
         <PageTitle>History</PageTitle>
         {sessionItems.length === 0 ? (
           <EmptyState

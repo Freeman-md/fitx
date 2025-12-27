@@ -5,12 +5,13 @@ import { useHistoryScreen } from '@/features/history/hooks/use-history-screen';
 
 export default function HistoryScreen() {
   const router = useRouter();
-  const { sessionItems } = useHistoryScreen();
+  const { sessionItems, refreshHistory } = useHistoryScreen();
 
   return (
     <HistoryScreenView
       sessionItems={sessionItems}
       onSelectSession={(sessionId) => router.push(`/history/${sessionId}`)}
+      onRefresh={() => void refreshHistory()}
     />
   );
 }

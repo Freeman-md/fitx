@@ -1,5 +1,6 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState } from 'react';
 
 import type { WorkoutPlan } from '@/data/models';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ type PlansListViewProps = {
   onCreatePlan: () => void;
   onSelectPlan: (planId: string) => void;
   onDeletePlan: (plan: WorkoutPlan) => void;
+  onRefresh: () => void;
 };
 
 export function PlansListView({
@@ -20,11 +22,28 @@ export function PlansListView({
   onCreatePlan,
   onSelectPlan,
   onDeletePlan,
+  onRefresh,
 }: PlansListViewProps) {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.resolve(onRefresh());
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.screen}>
-        <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
+        <ScrollView
+          contentContainerStyle={styles.container}
+          alwaysBounceVertical
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={() => void handleRefresh()} />
+          }>
           <PageTitle>Plans</PageTitle>
           {plans.length === 0 ? (
             <SecondaryText style={styles.centeredText}>No plans available.</SecondaryText>
