@@ -7,6 +7,7 @@ const WORKOUT_PLANS_KEY = 'fitx:workout-plans';
 const SESSIONS_KEY = 'fitx:sessions';
 const REST_STATE_KEY = 'fitx:rest-state';
 const LAST_COMPLETED_SESSION_KEY = 'fitx:last-completed-session';
+const ONBOARDING_COMPLETE_KEY = 'fitx:onboarding-complete';
 
 type RestState = {
   sessionId: string;
@@ -112,6 +113,7 @@ export async function resetStorage(): Promise<void> {
     SESSIONS_KEY,
     REST_STATE_KEY,
     LAST_COMPLETED_SESSION_KEY,
+    ONBOARDING_COMPLETE_KEY,
   ]);
 }
 
@@ -137,6 +139,18 @@ export async function saveLastCompletedSessionId(sessionId: string): Promise<voi
 
 export async function loadLastCompletedSessionId(): Promise<string | null> {
   return AsyncStorage.getItem(LAST_COMPLETED_SESSION_KEY);
+}
+
+export async function saveHasCompletedOnboarding(value: boolean): Promise<void> {
+  await AsyncStorage.setItem(ONBOARDING_COMPLETE_KEY, value ? 'true' : 'false');
+}
+
+export async function loadHasCompletedOnboarding(): Promise<boolean> {
+  const stored = await AsyncStorage.getItem(ONBOARDING_COMPLETE_KEY);
+  if (!stored) {
+    return false;
+  }
+  return stored === 'true';
 }
 
 function normalizeActiveSessions(sessions: Session[]): Session[] {
