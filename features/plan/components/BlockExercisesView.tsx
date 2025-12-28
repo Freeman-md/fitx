@@ -50,6 +50,7 @@ export function BlockExercisesView({
       <View style={styles.screen}>
         <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
           <View style={styles.context}>
+            <Button label="Back to Blocks" onPress={onBack} variant="secondary" size="compact" />
             <PageTitle style={styles.blockName}>{block.title}</PageTitle>
             <SecondaryText style={styles.subtitle}>
               {plan.gymType ? `${day.name} · ${plan.name} · ${plan.gymType}` : `${day.name} · ${plan.name}`}

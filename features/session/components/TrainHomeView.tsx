@@ -51,7 +51,7 @@ export function TrainHomeView({
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <ScrollView
         contentContainerStyle={styles.container}
         alwaysBounceVertical

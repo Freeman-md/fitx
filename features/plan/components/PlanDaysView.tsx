@@ -52,6 +52,7 @@ export function PlanDaysView({
       <View style={styles.screen}>
         <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
           <View style={styles.context}>
+            <Button label="Back to Plans" onPress={onBack} variant="secondary" size="compact" />
             <PageTitle style={styles.planName}>{planName}</PageTitle>
             {gymType ? <SecondaryText style={styles.subtitle}>{gymType}</SecondaryText> : null}
           </View>

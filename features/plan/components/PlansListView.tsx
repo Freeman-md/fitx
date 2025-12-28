@@ -37,7 +37,7 @@ export function PlansListView({
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <View style={styles.screen}>
         <ScrollView
           contentContainerStyle={styles.container}

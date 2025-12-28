@@ -34,7 +34,7 @@ export function TrainActiveSessionContextView({
   const accent = isDark ? '#60a5fa' : '#2563eb';
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <View style={styles.screen}>
         <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical>
           <SectionTitle>Plan</SectionTitle>

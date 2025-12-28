@@ -50,6 +50,7 @@ export function DayBlocksView({
       <View style={styles.screen}>
         <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
           <View style={styles.context}>
+            <Button label="Back to Days" onPress={onBack} variant="secondary" size="compact" />
             <PageTitle style={styles.dayName}>{day.name}</PageTitle>
             <SecondaryText style={styles.subtitle}>
               {plan.gymType ? `${plan.name} · ${plan.gymType}` : plan.name}
