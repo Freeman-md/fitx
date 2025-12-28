@@ -76,7 +76,9 @@ export function PlansListView({
             </View>
           )}
         </ScrollView>
-        <Fab accessibilityLabel="Add plan" label="New Plan" onPress={onCreatePlan} />
+        {plans.length > 0 ? (
+          <Fab accessibilityLabel="Add plan" label="New Plan" onPress={onCreatePlan} />
+        ) : null}
       </View>
     </SafeAreaView>
   );
