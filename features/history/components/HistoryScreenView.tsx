@@ -5,9 +5,8 @@ import { useState } from 'react';
 import type { HistoryListItem } from '@/features/history/utils/history-view';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
-import { PageTitle, PrimaryText, SecondaryText } from '@/components/ui/text';
+import { PrimaryText, SecondaryText } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 type HistoryScreenViewProps = {
   sessionItems: HistoryListItem[];
@@ -21,8 +20,6 @@ export function HistoryScreenView({
   onRefresh,
 }: HistoryScreenViewProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -41,9 +38,6 @@ export function HistoryScreenView({
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={() => void handleRefresh()} />
         }>
-        <View style={[styles.titleBadge, isDark ? styles.titleBadgeDark : styles.titleBadgeLight]}>
-          <PageTitle style={styles.titleText}>History</PageTitle>
-        </View>
         {sessionItems.length === 0 ? (
           <EmptyState
             title="No completed sessions yet"
@@ -83,23 +77,6 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-  },
-  titleBadge: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.xs,
-    borderRadius: 999,
-    alignSelf: 'center',
-  },
-  titleBadgeLight: {
-    backgroundColor: '#f1f5f9',
-  },
-  titleBadgeDark: {
-    backgroundColor: '#1f2937',
-  },
-  titleText: {
-    fontSize: 20,
-    fontWeight: '700',
-    opacity: 1,
   },
   section: {
     gap: Spacing.sm,

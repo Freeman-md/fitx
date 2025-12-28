@@ -3,7 +3,7 @@ import React from 'react';
 
 export default function TabLayout() {
   return (
-    <Tabs initialRouteName="train" screenOptions={{ headerShown: false }}>
+    <Tabs initialRouteName="train" screenOptions={{ headerShown: true }}>
       <Tabs.Screen
         name="train"
         options={{

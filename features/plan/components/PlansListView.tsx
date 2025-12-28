@@ -7,9 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Fab } from '@/components/ui/fab';
-import { PageTitle, PrimaryText, SecondaryText } from '@/components/ui/text';
+import { PrimaryText, SecondaryText } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 type PlansListViewProps = {
   plans: WorkoutPlan[];
@@ -27,8 +26,6 @@ export function PlansListView({
   onRefresh,
 }: PlansListViewProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -48,9 +45,6 @@ export function PlansListView({
           refreshControl={
             <RefreshControl refreshing={isRefreshing} onRefresh={() => void handleRefresh()} />
           }>
-          <View style={[styles.titleBadge, isDark ? styles.titleBadgeDark : styles.titleBadgeLight]}>
-            <PageTitle style={styles.titleText}>Plans</PageTitle>
-          </View>
           {plans.length === 0 ? (
             <EmptyState
               title="No plans yet"
@@ -100,23 +94,6 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     paddingBottom: Spacing.xxl,
     flexGrow: 1,
-  },
-  titleBadge: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.xs,
-    borderRadius: 999,
-    alignSelf: 'center',
-  },
-  titleBadgeLight: {
-    backgroundColor: '#f1f5f9',
-  },
-  titleBadgeDark: {
-    backgroundColor: '#1f2937',
-  },
-  titleText: {
-    fontSize: 20,
-    fontWeight: '700',
-    opacity: 1,
   },
   section: {
     gap: Spacing.sm,

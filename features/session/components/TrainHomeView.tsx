@@ -5,9 +5,8 @@ import { useState } from 'react';
 import type { WorkoutPlan } from '@/data/models';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
-import { PageTitle, SecondaryText, SectionTitle } from '@/components/ui/text';
+import { SecondaryText, SectionTitle } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { PlanCard } from '@/features/session/components/PlanCard';
 import { DayChip } from '@/features/session/components/DayChip';
 
@@ -41,8 +40,6 @@ export function TrainHomeView({
   const hasSelectedDay = Boolean(selectedDayId);
   const startDisabled = !hasSelectedPlan || !hasSelectedDay;
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -61,12 +58,11 @@ export function TrainHomeView({
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={() => void handleRefresh()} />
         }>
-        <View style={styles.header}>
-          <View style={[styles.titleBadge, isDark ? styles.titleBadgeDark : styles.titleBadgeLight]}>
-            <PageTitle style={styles.titleText}>Train</PageTitle>
+        {hasPlans ? (
+          <View style={styles.header}>
+            <SecondaryText style={styles.subtitle}>Pick a plan and day to start.</SecondaryText>
           </View>
-          <SecondaryText style={styles.subtitle}>Pick a plan and day to start.</SecondaryText>
-        </View>
+        ) : null}
 
         {!hasPlans ? (
           <EmptyState
@@ -145,23 +141,6 @@ const styles = StyleSheet.create({
   header: {
     gap: Spacing.xs,
     alignItems: 'center',
-  },
-  titleBadge: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.xs,
-    borderRadius: 999,
-    alignSelf: 'center',
-  },
-  titleBadgeLight: {
-    backgroundColor: '#f1f5f9',
-  },
-  titleBadgeDark: {
-    backgroundColor: '#1f2937',
-  },
-  titleText: {
-    fontSize: 20,
-    fontWeight: '700',
-    opacity: 1,
   },
   subtitle: {
     textAlign: 'center',
