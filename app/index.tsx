@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useRootNavigationState, useRouter } from 'expo-router';
 
 import { loadHasCompletedOnboarding } from '@/data/storage';
 import { SplashView } from '@/features/onboarding/components/SplashView';
 
 export default function Index() {
   const router = useRouter();
+  const navigationState = useRootNavigationState();
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean | null>(null);
   const [isSplashComplete, setIsSplashComplete] = useState(false);
+  const isNavReady = Boolean(navigationState?.key);
 
   useEffect(() => {
     let isMounted = true;
@@ -31,11 +33,11 @@ export default function Index() {
   }, []);
 
   useEffect(() => {
-    if (!isSplashComplete || hasCompletedOnboarding === null) {
+    if (!isNavReady || !isSplashComplete || hasCompletedOnboarding === null) {
       return;
     }
     router.replace(hasCompletedOnboarding ? '/(tabs)/train' : '/onboarding');
-  }, [hasCompletedOnboarding, isSplashComplete, router]);
+  }, [hasCompletedOnboarding, isNavReady, isSplashComplete, router]);
 
   return (
     <>
