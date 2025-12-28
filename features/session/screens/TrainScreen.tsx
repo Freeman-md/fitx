@@ -32,7 +32,6 @@ export default function TrainScreen() {
     endSessionPrompt,
     setSelectedPlanId,
     setSelectedDayId,
-    selectedPlanId,
     refreshSessionState,
   } = useTrainScreen({
     onSessionCompleted: () => {
@@ -40,11 +39,7 @@ export default function TrainScreen() {
     },
   });
 
-  const startDisabledReason = selectedPlan
-    ? selectedDay
-      ? null
-      : 'Select a day to start.'
-    : 'Select a plan to start.';
+  const startDisabledReason = selectedDay ? null : 'Select a workout to start.';
 
   const handleSelectPlan = (planId: string) => {
     setSelectedPlanId(planId);
@@ -79,11 +74,7 @@ export default function TrainScreen() {
       onSelectDay={setSelectedDayId}
       onStartSession={() => void startSessionForDay()}
       onCreatePlan={() => router.push({ pathname: '/(tabs)/plans', params: { create: '1' } })}
-      onAddDays={() => {
-        if (selectedPlanId) {
-          router.push(`/plans/${selectedPlanId}`);
-        }
-      }}
+      onViewPlans={() => router.push('/(tabs)/plans')}
       startDisabledReason={startDisabledReason}
       onRefresh={() => void refreshSessionState()}
     />
