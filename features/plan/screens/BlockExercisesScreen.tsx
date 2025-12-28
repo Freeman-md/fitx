@@ -184,7 +184,6 @@ export default function BlockExercisesScreen() {
         options={{
           title: 'Block Details',
           headerBackTitle: 'Back',
-          headerBackTitleVisible: true,
         }}
       />
       <BlockExercisesView
