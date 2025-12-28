@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Block, Exercise, WorkoutDay, WorkoutPlan } from '@/data/models';
 import { ExerciseCard } from '@/features/plan/components/ExerciseCard';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Fab } from '@/components/ui/fab';
 import { PageTitle, SecondaryText, SectionTitle } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
@@ -60,7 +61,13 @@ export function BlockExercisesView({
           </View>
           <View style={styles.section}>
             {exercises.length === 0 ? (
-              <SecondaryText style={styles.centeredText}>No exercises yet.</SecondaryText>
+              <EmptyState
+                title="No exercises yet"
+                description="Add an exercise to this block."
+                actionLabel="Create your first exercise"
+                onAction={onAddExercise}
+                size="section"
+              />
             ) : (
               exercises.map((exercise) => (
                 <ExerciseCard
@@ -75,7 +82,9 @@ export function BlockExercisesView({
             )}
           </View>
         </ScrollView>
-        <Fab accessibilityLabel="Add exercise" label="New Exercise" onPress={onAddExercise} />
+        {exercises.length > 0 ? (
+          <Fab accessibilityLabel="Add exercise" label="New Exercise" onPress={onAddExercise} />
+        ) : null}
       </View>
     </SafeAreaView>
   );
@@ -108,8 +117,5 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     opacity: 0.75,
-  },
-  centeredText: {
-    textAlign: 'center',
   },
 });

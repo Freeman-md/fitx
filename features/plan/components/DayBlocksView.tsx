@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Block, WorkoutDay, WorkoutPlan } from '@/data/models';
 import { BlockCard } from '@/features/plan/components/BlockCard';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Fab } from '@/components/ui/fab';
 import { PageTitle, SecondaryText, SectionTitle } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
@@ -60,7 +61,13 @@ export function DayBlocksView({
           </View>
           <View style={styles.section}>
             {blocks.length === 0 ? (
-              <SecondaryText style={styles.centeredText}>No blocks yet.</SecondaryText>
+              <EmptyState
+                title="No blocks yet"
+                description="Add a block to organize your exercises."
+                actionLabel="Create your first block"
+                onAction={onAddBlock}
+                size="section"
+              />
             ) : (
               blocks.map((block) => (
                 <BlockCard
@@ -76,7 +83,9 @@ export function DayBlocksView({
             )}
           </View>
         </ScrollView>
-        <Fab accessibilityLabel="Add block" label="New Block" onPress={onAddBlock} />
+        {blocks.length > 0 ? (
+          <Fab accessibilityLabel="Add block" label="New Block" onPress={onAddBlock} />
+        ) : null}
       </View>
     </SafeAreaView>
   );
@@ -109,8 +118,5 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     opacity: 0.75,
-  },
-  centeredText: {
-    textAlign: 'center',
   },
 });

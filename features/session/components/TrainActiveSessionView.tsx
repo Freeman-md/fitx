@@ -2,11 +2,9 @@ import type { RefObject } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { Button } from '@/components/ui/button';
-import { FullScreenFocus } from '@/components/ui/focus-layout';
-import { PageTitle, PrimaryText, SecondaryText } from '@/components/ui/text';
+import { PrimaryText, SecondaryText } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
 import type { CurrentExerciseInfo } from '@/features/session/utils/session-info';
-import { RestView } from '@/features/session/components/RestView';
 
 type TrainActiveSessionViewProps = {
   inputRef: RefObject<TextInput | null>;
@@ -21,7 +19,6 @@ type TrainActiveSessionViewProps = {
   onCompleteSet: () => void;
   onSkipSet: () => void;
   onSkipRest: () => void;
-  onEndSession: () => void;
   inputPlaceholderColor: string;
   inputBorderColor?: string;
   inputBackgroundColor?: string;
@@ -41,7 +38,6 @@ export function TrainActiveSessionView({
   onCompleteSet,
   onSkipSet,
   onSkipRest,
-  onEndSession,
   inputPlaceholderColor,
   inputBorderColor,
   inputBackgroundColor,
@@ -49,23 +45,27 @@ export function TrainActiveSessionView({
 }: TrainActiveSessionViewProps) {
   if (isResting) {
     return (
-      <RestView secondsRemaining={restSecondsRemaining} onSkipRest={onSkipRest} />
+      <View style={styles.content}>
+        <PrimaryText style={styles.restCountdown}>{restSecondsRemaining}</PrimaryText>
+        <SecondaryText style={styles.restLabel}>Rest</SecondaryText>
+        <Button label="Skip Rest" onPress={onSkipRest} variant="secondary" size="compact" />
+      </View>
     );
   }
 
   if (!currentExerciseInfo) {
     return (
-      <FullScreenFocus>
+      <View style={styles.content}>
         <SecondaryText style={styles.centeredText}>
           Unable to load active session details.
         </SecondaryText>
-      </FullScreenFocus>
+      </View>
     );
   }
 
   return (
-    <FullScreenFocus>
-      <PageTitle style={styles.exerciseName}>{currentExerciseInfo.name}</PageTitle>
+    <View style={styles.content}>
+      <PrimaryText style={styles.exerciseName}>{currentExerciseInfo.name}</PrimaryText>
       <PrimaryText style={styles.setCount}>
         Set {setNumber} of {currentExerciseInfo.totalSets}
       </PrimaryText>
@@ -100,17 +100,16 @@ export function TrainActiveSessionView({
           style={styles.fullWidth}
         />
       </View>
-      <Button
-        label="End Session"
-        onPress={onEndSession}
-        variant="destructive"
-        size="compact"
-      />
-    </FullScreenFocus>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  content: {
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.sm,
+  },
   inputRow: {
     width: '100%',
   },
@@ -131,8 +130,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   exerciseName: {
-    fontSize: 32,
+    fontSize: 22,
     textAlign: 'center',
+    fontWeight: '600',
   },
   setCount: {
     fontSize: 24,
@@ -143,5 +143,13 @@ const styles = StyleSheet.create({
   },
   fullWidth: {
     width: '100%',
+  },
+  restCountdown: {
+    fontSize: 40,
+    textAlign: 'center',
+  },
+  restLabel: {
+    fontSize: 14,
+    textAlign: 'center',
   },
 });

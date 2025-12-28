@@ -9,6 +9,10 @@ export default function TrainScreen() {
     theme,
     inputRef,
     hasActiveSession,
+    activeSession,
+    activePlan,
+    activeDay,
+    activePosition,
     plans,
     selectedPlan,
     selectedDay,
@@ -52,6 +56,10 @@ export default function TrainScreen() {
       colors={theme.colors}
       inputRef={inputRef}
       hasActiveSession={hasActiveSession}
+      activeSession={activeSession}
+      activePlan={activePlan}
+      activeDay={activeDay}
+      activePosition={activePosition}
       currentExerciseInfo={currentExerciseInfo}
       setNumber={setNumber}
       actualRepsInput={actualRepsInput}

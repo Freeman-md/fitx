@@ -152,6 +152,8 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
     setSelectedPlanId,
     selectedPlan,
     activeSession,
+    activePlan,
+    activeDay,
     activePosition,
     currentExerciseInfo,
     actualRepsInput,

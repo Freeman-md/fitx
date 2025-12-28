@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { WorkoutDay } from '@/data/models';
 import { DayCard } from '@/features/plan/components/DayCard';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Fab } from '@/components/ui/fab';
 import { PageTitle, SecondaryText, SectionTitle } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
@@ -60,7 +61,13 @@ export function PlanDaysView({
           </View>
           <View style={styles.section}>
             {days.length === 0 ? (
-              <SecondaryText style={styles.centeredText}>No days yet.</SecondaryText>
+              <EmptyState
+                title="No days yet"
+                description="Add a day to build this plan."
+                actionLabel="Create your first day"
+                onAction={onAddDay}
+                size="section"
+              />
             ) : (
               days.map((day) => (
                 <DayCard
@@ -76,7 +83,9 @@ export function PlanDaysView({
             )}
           </View>
         </ScrollView>
-        <Fab accessibilityLabel="Add day" label="New Day" onPress={onAddDay} />
+        {days.length > 0 ? (
+          <Fab accessibilityLabel="Add day" label="New Day" onPress={onAddDay} />
+        ) : null}
       </View>
     </SafeAreaView>
   );
@@ -109,8 +118,5 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     opacity: 0.75,
-  },
-  centeredText: {
-    textAlign: 'center',
   },
 });
