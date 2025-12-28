@@ -5,9 +5,11 @@ import { useState } from 'react';
 import type { WorkoutPlan } from '@/data/models';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Fab } from '@/components/ui/fab';
 import { PageTitle, PrimaryText, SecondaryText } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 type PlansListViewProps = {
   plans: WorkoutPlan[];
@@ -25,6 +27,8 @@ export function PlansListView({
   onRefresh,
 }: PlansListViewProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -44,9 +48,17 @@ export function PlansListView({
           refreshControl={
             <RefreshControl refreshing={isRefreshing} onRefresh={() => void handleRefresh()} />
           }>
-          <PageTitle>Plans</PageTitle>
+          <View style={[styles.titleBadge, isDark ? styles.titleBadgeDark : styles.titleBadgeLight]}>
+            <PageTitle style={styles.titleText}>Plans</PageTitle>
+          </View>
           {plans.length === 0 ? (
-            <SecondaryText style={styles.centeredText}>No plans available.</SecondaryText>
+            <EmptyState
+              title="No plans yet"
+              description="Build your first training plan to see it here."
+              actionLabel="Create your first plan"
+              onAction={onCreatePlan}
+              size="screen"
+            />
           ) : (
             <View style={styles.section}>
               {plans.map((plan) => (
@@ -87,6 +99,24 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     gap: Spacing.md,
     paddingBottom: Spacing.xxl,
+    flexGrow: 1,
+  },
+  titleBadge: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.xs,
+    borderRadius: 999,
+    alignSelf: 'center',
+  },
+  titleBadgeLight: {
+    backgroundColor: '#f1f5f9',
+  },
+  titleBadgeDark: {
+    backgroundColor: '#1f2937',
+  },
+  titleText: {
+    fontSize: 20,
+    fontWeight: '700',
+    opacity: 1,
   },
   section: {
     gap: Spacing.sm,
@@ -103,8 +133,5 @@ const styles = StyleSheet.create({
   },
   planName: {
     fontWeight: '600',
-  },
-  centeredText: {
-    textAlign: 'center',
   },
 });

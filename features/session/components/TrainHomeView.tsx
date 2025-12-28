@@ -4,11 +4,12 @@ import { useState } from 'react';
 
 import type { WorkoutPlan } from '@/data/models';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { PageTitle, SecondaryText, SectionTitle } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { PlanCard } from '@/features/session/components/PlanCard';
 import { DayChip } from '@/features/session/components/DayChip';
-import { TrainHomeEmptyState } from '@/features/session/components/TrainHomeEmptyState';
 
 type TrainHomeViewProps = {
   plans: WorkoutPlan[];
@@ -40,6 +41,8 @@ export function TrainHomeView({
   const hasSelectedDay = Boolean(selectedDayId);
   const startDisabled = !hasSelectedPlan || !hasSelectedDay;
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -59,16 +62,19 @@ export function TrainHomeView({
           <RefreshControl refreshing={isRefreshing} onRefresh={() => void handleRefresh()} />
         }>
         <View style={styles.header}>
-          <PageTitle>Train</PageTitle>
+          <View style={[styles.titleBadge, isDark ? styles.titleBadgeDark : styles.titleBadgeLight]}>
+            <PageTitle style={styles.titleText}>Train</PageTitle>
+          </View>
           <SecondaryText style={styles.subtitle}>Pick a plan and day to start.</SecondaryText>
         </View>
 
         {!hasPlans ? (
-          <TrainHomeEmptyState
+          <EmptyState
             title="No plans yet"
             description="Create a plan to start training."
             actionLabel="Create your first plan"
             onAction={onCreatePlan}
+            size="screen"
           />
         ) : (
           <>
@@ -87,13 +93,18 @@ export function TrainHomeView({
             <View style={styles.section}>
               <SectionTitle>Days</SectionTitle>
               {!selectedPlan ? (
-                <SecondaryText>Select a plan to see available days.</SecondaryText>
+                <View style={styles.centeredHelper}>
+                  <SecondaryText style={styles.centeredText}>
+                    Select a plan to see available days.
+                  </SecondaryText>
+                </View>
               ) : selectedPlan.days.length === 0 ? (
-                <TrainHomeEmptyState
+                <EmptyState
                   title="No days in this plan"
                   description="Add at least one day to start a session."
                   actionLabel="Add days to this plan"
                   onAction={onAddDays}
+                  size="section"
                 />
               ) : (
                 <View style={styles.dayList}>
@@ -133,12 +144,39 @@ const styles = StyleSheet.create({
   },
   header: {
     gap: Spacing.xs,
+    alignItems: 'center',
+  },
+  titleBadge: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.xs,
+    borderRadius: 999,
+    alignSelf: 'center',
+  },
+  titleBadgeLight: {
+    backgroundColor: '#f1f5f9',
+  },
+  titleBadgeDark: {
+    backgroundColor: '#1f2937',
+  },
+  titleText: {
+    fontSize: 20,
+    fontWeight: '700',
+    opacity: 1,
   },
   subtitle: {
     textAlign: 'center',
   },
   section: {
     gap: Spacing.sm,
+  },
+  centeredHelper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 120,
+    paddingHorizontal: Spacing.md,
+  },
+  centeredText: {
+    textAlign: 'center',
   },
   dayList: {
     flexDirection: 'row',

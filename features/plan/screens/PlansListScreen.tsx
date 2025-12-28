@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Stack, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { FormFooter } from '@/components/ui/form-footer';
@@ -10,6 +10,7 @@ import { usePlansList } from '@/features/plan/hooks/use-plans-list';
 
 export default function PlansListScreen() {
   const router = useRouter();
+  const { create } = useLocalSearchParams<{ create?: string }>();
   const { plans, requestDeletePlan, refreshPlans } = usePlansList();
   const { nameInput, setNameInput, gymTypeInput, setGymTypeInput, savePlan } = useCreatePlan();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -41,6 +42,17 @@ export default function PlansListScreen() {
       closeCreateSheet();
     }
   };
+
+  useEffect(() => {
+    if (!create) {
+      return;
+    }
+    const createValue = Array.isArray(create) ? create[0] : create;
+    if (createValue === '1' || createValue === 'true') {
+      setIsCreateOpen(true);
+      router.setParams({ create: undefined });
+    }
+  }, [create, router]);
 
   return (
     <>
