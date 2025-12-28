@@ -71,7 +71,6 @@ export default function DayBlocksScreen() {
         options={{
           title: 'Day Details',
           headerBackTitle: 'Back',
-          headerBackTitleVisible: true,
         }}
       />
       <DayBlocksView
