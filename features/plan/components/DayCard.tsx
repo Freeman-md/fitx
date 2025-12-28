@@ -40,7 +40,9 @@ export function DayCard({
         <View style={styles.header}>
           <View style={styles.info}>
             <PrimaryText style={styles.title}>{day.name}</PrimaryText>
-            <SecondaryText style={styles.meta}>{`Day ${day.order}`}</SecondaryText>
+            <SecondaryText style={styles.meta}>
+              {day.weekday ? day.weekday : 'Unassigned'} · Day {day.order}
+            </SecondaryText>
           </View>
           <MaterialIcons name="chevron-right" size={22} color={iconColor} />
         </View>

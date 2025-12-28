@@ -17,7 +17,7 @@ type PlanDaysViewProps = {
   onMoveDayUp: (dayId: string) => void;
   onMoveDayDown: (dayId: string) => void;
   onOpenBlocks: (dayId: string) => void;
-  onEditDay: (dayId: string, dayName: string) => void;
+  onEditDay: (day: WorkoutDay) => void;
   onDeleteDay: (dayId: string, dayName: string) => void;
   onBack: () => void;
   isMissing: boolean;
@@ -76,7 +76,7 @@ export function PlanDaysView({
                   onMoveUp={() => onMoveDayUp(day.id)}
                   onMoveDown={() => onMoveDayDown(day.id)}
                   onOpenBlocks={() => onOpenBlocks(day.id)}
-                  onEdit={() => onEditDay(day.id, day.name)}
+                  onEdit={() => onEditDay(day)}
                   onDelete={() => onDeleteDay(day.id, day.name)}
                 />
               ))

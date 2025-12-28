@@ -1,13 +1,14 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 
-import type { WorkoutDay, WorkoutPlan } from '@/data/models';
+import type { Weekday, WorkoutDay, WorkoutPlan } from '@/data/models';
 import { loadWorkoutPlans, saveWorkoutPlans } from '@/data/storage';
 import { getNextOrder, normalizeOrder, sortByOrder } from '@/features/plan/utils/order';
 
 export type DayEdit = {
   id: string;
   name: string;
+  weekday: Weekday | null;
 };
 
 type MoveDirection = 'up' | 'down';
@@ -55,14 +56,25 @@ export function usePlanDays(planId: string | undefined) {
     await persistPlan(nextPlan);
   };
 
-  const addDay = async (name: string) => {
+  const isWeekdayTaken = (weekday: Weekday, excludeDayId?: string) => {
     if (!plan) {
       return false;
+    }
+    return plan.days.some((day) => day.weekday === weekday && day.id !== excludeDayId);
+  };
+
+  const addDay = async (name: string, weekday: Weekday) => {
+    if (!plan) {
+      return { ok: false, error: 'Plan not found.' };
+    }
+    if (isWeekdayTaken(weekday)) {
+      return { ok: false, error: 'That weekday is already assigned.' };
     }
     const nextOrder = getNextOrder(orderedDays);
     const nextDay: WorkoutDay = {
       id: `day-${Date.now()}`,
       name,
+      weekday,
       order: nextOrder,
       blocks: [],
     };
@@ -72,11 +84,22 @@ export function usePlanDays(planId: string | undefined) {
       updatedAt: new Date().toISOString(),
     };
     await persistPlan(nextPlan);
-    return true;
+    return { ok: true };
   };
 
-  const renameDay = async (dayEdit: DayEdit) => {
-    await updateDay(dayEdit.id, (day) => ({ ...day, name: dayEdit.name }));
+  const updateDayDetails = async (dayEdit: DayEdit) => {
+    if (!dayEdit.weekday) {
+      return { ok: false, error: 'Select a weekday.' };
+    }
+    if (isWeekdayTaken(dayEdit.weekday, dayEdit.id)) {
+      return { ok: false, error: 'That weekday is already assigned.' };
+    }
+    await updateDay(dayEdit.id, (day) => ({
+      ...day,
+      name: dayEdit.name,
+      weekday: dayEdit.weekday,
+    }));
+    return { ok: true };
   };
 
   const deleteDay = async (dayId: string) => {
@@ -120,7 +143,7 @@ export function usePlanDays(planId: string | undefined) {
     plan,
     orderedDays,
     addDay,
-    renameDay,
+    updateDayDetails,
     deleteDay,
     moveDay,
   };

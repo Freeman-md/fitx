@@ -8,9 +8,22 @@ export interface WorkoutPlan {
   days: WorkoutDay[];
 }
 
+export const Weekdays = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+] as const;
+
+export type Weekday = (typeof Weekdays)[number];
+
 export interface WorkoutDay {
   id: string;
   name: string;
+  weekday?: Weekday;
   order: number;
   // Days fully own their blocks; there is no cross-plan sharing.
   blocks: Block[];
