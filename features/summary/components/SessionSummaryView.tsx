@@ -18,7 +18,7 @@ export function SessionSummaryView({
   onViewHistory,
 }: SessionSummaryViewProps) {
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.container} alwaysBounceVertical={false}>
         <PageTitle>Session Complete</PageTitle>
         {summary ? (

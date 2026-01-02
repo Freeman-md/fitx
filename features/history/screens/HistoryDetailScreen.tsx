@@ -13,7 +13,6 @@ export default function HistoryDetailScreen() {
         options={{
           title: 'Session Details',
           headerBackTitle: 'Back',
-          headerBackTitleVisible: true,
         }}
       />
       <HistoryDetailView detail={detail} />

@@ -69,6 +69,7 @@ export default function PlansListScreen() {
         onSelectPlan={(planId) => router.push(`/plans/${planId}`)}
         onDeletePlan={requestDeletePlan}
         onRefresh={refreshPlans}
+        onOpenAccount={() => router.push('/account')}
       />
       <BottomSheet
         visible={isCreateOpen}

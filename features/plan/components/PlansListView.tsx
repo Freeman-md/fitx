@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Fab } from '@/components/ui/fab';
-import { PrimaryText, SecondaryText } from '@/components/ui/text';
+import { PageTitle, PrimaryText, SecondaryText } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
 
 type PlansListViewProps = {
@@ -16,6 +16,7 @@ type PlansListViewProps = {
   onSelectPlan: (planId: string) => void;
   onDeletePlan: (plan: WorkoutPlan) => void;
   onRefresh: () => void;
+  onOpenAccount: () => void;
 };
 
 export function PlansListView({
@@ -24,6 +25,7 @@ export function PlansListView({
   onSelectPlan,
   onDeletePlan,
   onRefresh,
+  onOpenAccount,
 }: PlansListViewProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -45,6 +47,15 @@ export function PlansListView({
           refreshControl={
             <RefreshControl refreshing={isRefreshing} onRefresh={() => void handleRefresh()} />
           }>
+          <View style={styles.headerRow}>
+            <PageTitle>Plans</PageTitle>
+            <Button
+              label="Account"
+              variant="secondary"
+              size="compact"
+              onPress={onOpenAccount}
+            />
+          </View>
           {plans.length === 0 ? (
             <EmptyState
               title="No plans yet"
@@ -96,6 +107,12 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     paddingBottom: Spacing.xxl,
     flexGrow: 1,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.sm,
   },
   section: {
     gap: Spacing.sm,
