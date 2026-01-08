@@ -5,6 +5,7 @@ import { SessionStatus } from '@/data/models';
 import { getCurrentExerciseInfo, type CurrentExerciseInfo } from '@/features/session/utils/session-info';
 import { resolveOwnerId } from '@/data/identity';
 import { startSession } from '@/data/session';
+import { mirrorCompletedSession, mirrorPendingSessions } from '@/data/mirror';
 import { useRestTimer } from '@/features/session/hooks/use-rest-timer';
 import { buildEndedSession, buildSessionAfterSetAction } from '@/features/session/utils/session-actions';
 import {
@@ -16,6 +17,7 @@ import {
 } from '@/features/session/utils/session-selectors';
 import {
   loadActiveSession,
+  loadSessions,
   loadWorkoutPlans,
   saveLastCompletedSessionId,
   saveSession,
@@ -37,10 +39,14 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
   });
 
   const refreshSessionState = useCallback(async () => {
-    const storedPlans = await loadWorkoutPlans();
-    const storedActiveSession = await loadActiveSession();
+    const [storedPlans, storedActiveSession, storedSessions] = await Promise.all([
+      loadWorkoutPlans(),
+      loadActiveSession(),
+      loadSessions(),
+    ]);
     setPlans(storedPlans);
     setActiveSession(storedActiveSession);
+    void mirrorPendingSessions(storedSessions);
   }, []);
 
   useEffect(() => {
@@ -107,6 +113,7 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
     await saveSession(nextSession);
     if (nextSession.status === SessionStatus.Completed) {
       await saveLastCompletedSessionId(nextSession.id);
+      void mirrorCompletedSession(nextSession);
       await stopRestTimer();
       setActiveSession(null);
       onSessionCompleted?.(nextSession);
@@ -140,6 +147,7 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
     await saveSession(nextSession);
     if (status === SessionStatus.Completed) {
       await saveLastCompletedSessionId(nextSession.id);
+      void mirrorCompletedSession(nextSession);
     }
     await stopRestTimer();
     setActiveSession(null);

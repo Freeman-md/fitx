@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { resolveOwnerId } from '@/data/identity';
 import { loadWorkoutPlans, saveWorkoutPlans } from '@/data/storage';
+import { attemptPlanMirror, markPlanDirty } from '@/data/mirror';
 import { buildNewPlan } from '@/features/plan/utils/plan-builders';
 import { generateId } from '@/lib/id';
 
@@ -27,6 +28,8 @@ export function useCreatePlan() {
     const existingPlans = await loadWorkoutPlans();
     const nextPlans = [...existingPlans, newPlan];
     await saveWorkoutPlans(nextPlans);
+    await markPlanDirty(newPlan.id);
+    void attemptPlanMirror(newPlan);
     return true;
   };
 

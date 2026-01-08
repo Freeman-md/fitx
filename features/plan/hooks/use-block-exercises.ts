@@ -3,6 +3,7 @@ import { useFocusEffect } from 'expo-router';
 
 import type { Exercise, WorkoutPlan } from '@/data/models';
 import { loadWorkoutPlans, saveWorkoutPlans } from '@/data/storage';
+import { attemptPlanMirror, markPlanDirty } from '@/data/mirror';
 import { normalizeOrder, sortByOrder } from '@/features/plan/utils/order';
 
 type MoveDirection = 'up' | 'down';
@@ -50,6 +51,8 @@ export function useBlockExercises(
   const persistPlan = async (nextPlan: WorkoutPlan) => {
     const nextPlans = plans.map((plan) => (plan.id === nextPlan.id ? nextPlan : plan));
     await saveWorkoutPlans(nextPlans);
+    await markPlanDirty(nextPlan.id);
+    void attemptPlanMirror(nextPlan);
     setPlans(nextPlans);
   };
 
