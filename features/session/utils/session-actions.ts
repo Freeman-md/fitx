@@ -26,13 +26,18 @@ export const buildSessionAfterSetAction = ({
     completedAt,
     actualReps: markCompleted ? actualReps ?? set.targetReps : undefined,
     actualTimeSeconds: markCompleted ? actualTimeSeconds ?? set.targetTimeSeconds : undefined,
-  }));
+  }), completedAt);
 
   if (isSessionComplete(updatedSession)) {
-    return { ...updatedSession, status: SessionStatus.Completed, endedAt: completedAt };
+    return {
+      ...updatedSession,
+      status: SessionStatus.Completed,
+      endedAt: completedAt,
+      updatedAt: completedAt,
+    };
   }
 
-  return updatedSession;
+  return { ...updatedSession, updatedAt: completedAt };
 };
 
 export const buildEndedSession = (
@@ -44,5 +49,6 @@ export const buildEndedSession = (
     ...session,
     status,
     endedAt,
+    updatedAt: endedAt,
   };
 };

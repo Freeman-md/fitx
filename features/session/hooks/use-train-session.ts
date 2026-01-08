@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Session, SessionStatus as SessionStatusType, WorkoutPlan } from '@/data/models';
 import { SessionStatus } from '@/data/models';
 import { getCurrentExerciseInfo, type CurrentExerciseInfo } from '@/features/session/utils/session-info';
+import { resolveOwnerId } from '@/data/identity';
 import { startSession } from '@/data/session';
 import { useRestTimer } from '@/features/session/hooks/use-rest-timer';
 import { buildEndedSession, buildSessionAfterSetAction } from '@/features/session/utils/session-actions';
@@ -80,7 +81,8 @@ export function useTrainSession(options: UseTrainSessionOptions = {}) {
       return;
     }
 
-    const session = await startSession(plan, day);
+    const ownerId = await resolveOwnerId();
+    const session = await startSession(plan, day, ownerId);
     setActiveSession(session);
 
   };

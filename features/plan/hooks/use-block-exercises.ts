@@ -57,18 +57,19 @@ export function useBlockExercises(
     if (!currentPlan || !currentDay || !currentBlock) {
       return;
     }
+    const updatedAt = new Date().toISOString();
     const nextBlocks = currentDay.blocks.map((block) =>
       block.id === currentBlock.id
-        ? { ...block, exercises: updater(block.exercises) }
+        ? { ...block, exercises: updater(block.exercises), updatedAt }
         : block
     );
     const nextDays = currentPlan.days.map((day) =>
-      day.id === currentDay.id ? { ...day, blocks: nextBlocks } : day
+      day.id === currentDay.id ? { ...day, blocks: nextBlocks, updatedAt } : day
     );
     const nextPlan = {
       ...currentPlan,
       days: nextDays,
-      updatedAt: new Date().toISOString(),
+      updatedAt,
     };
     await persistPlan(nextPlan);
   };
@@ -78,8 +79,11 @@ export function useBlockExercises(
   };
 
   const editExercise = async (exerciseId: string, updater: (exercise: Exercise) => Exercise) => {
+    const updatedAt = new Date().toISOString();
     await updateBlock((exercises) =>
-      exercises.map((exercise) => (exercise.id === exerciseId ? updater(exercise) : exercise))
+      exercises.map((exercise) =>
+        exercise.id === exerciseId ? { ...updater(exercise), updatedAt } : exercise
+      )
     );
   };
 
@@ -98,7 +102,11 @@ export function useBlockExercises(
       return;
     }
     [list[index], list[targetIndex]] = [list[targetIndex], list[index]];
-    const nextExercises = normalizeOrder(list);
+    const updatedAt = new Date().toISOString();
+    const nextExercises = normalizeOrder(list).map((exercise) => ({
+      ...exercise,
+      updatedAt,
+    }));
     await updateBlock(() => nextExercises);
   };
 

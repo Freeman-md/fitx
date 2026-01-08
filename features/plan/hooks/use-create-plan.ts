@@ -1,7 +1,9 @@
 import { useState } from 'react';
 
+import { resolveOwnerId } from '@/data/identity';
 import { loadWorkoutPlans, saveWorkoutPlans } from '@/data/storage';
 import { buildNewPlan } from '@/features/plan/utils/plan-builders';
+import { generateId } from '@/lib/id';
 
 export function useCreatePlan() {
   const [nameInput, setNameInput] = useState('');
@@ -13,8 +15,10 @@ export function useCreatePlan() {
     }
 
     const now = new Date().toISOString();
+    const ownerId = await resolveOwnerId();
     const newPlan = buildNewPlan({
-      id: `plan-${Date.now()}`,
+      id: generateId('plan'),
+      ownerId,
       name: nameInput.trim(),
       gymType: gymTypeInput.trim(),
       timestamp: now,

@@ -4,6 +4,7 @@ import { useFocusEffect } from 'expo-router';
 import type { Weekday, WorkoutDay, WorkoutPlan } from '@/data/models';
 import { loadWorkoutPlans, saveWorkoutPlans } from '@/data/storage';
 import { getNextOrder, normalizeOrder, sortByOrder } from '@/features/plan/utils/order';
+import { generateId } from '@/lib/id';
 
 export type DayEdit = {
   id: string;
@@ -48,10 +49,13 @@ export function usePlanDays(planId: string | undefined) {
     if (!plan) {
       return;
     }
+    const updatedAt = new Date().toISOString();
     const nextPlan = {
       ...plan,
-      days: plan.days.map((day) => (day.id === dayId ? updater(day) : day)),
-      updatedAt: new Date().toISOString(),
+      days: plan.days.map((day) =>
+        day.id === dayId ? { ...updater(day), updatedAt } : day
+      ),
+      updatedAt,
     };
     await persistPlan(nextPlan);
   };
@@ -71,17 +75,19 @@ export function usePlanDays(planId: string | undefined) {
       return { ok: false, error: 'That weekday is already assigned.' };
     }
     const nextOrder = getNextOrder(orderedDays);
+    const updatedAt = new Date().toISOString();
     const nextDay: WorkoutDay = {
-      id: `day-${Date.now()}`,
+      id: generateId('day'),
       name,
       weekday,
       order: nextOrder,
+      updatedAt,
       blocks: [],
     };
     const nextPlan = {
       ...plan,
       days: [...plan.days, nextDay],
-      updatedAt: new Date().toISOString(),
+      updatedAt,
     };
     await persistPlan(nextPlan);
     return { ok: true };
@@ -130,11 +136,15 @@ export function usePlanDays(planId: string | undefined) {
     }
     const nextDays = [...days];
     [nextDays[index], nextDays[targetIndex]] = [nextDays[targetIndex], nextDays[index]];
-    const normalizedDays = normalizeOrder(nextDays);
+    const updatedAt = new Date().toISOString();
+    const normalizedDays = normalizeOrder(nextDays).map((day) => ({
+      ...day,
+      updatedAt,
+    }));
     const nextPlan = {
       ...plan,
       days: normalizedDays,
-      updatedAt: new Date().toISOString(),
+      updatedAt,
     };
     await persistPlan(nextPlan);
   };

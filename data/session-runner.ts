@@ -33,7 +33,8 @@ export function isSessionComplete(session: Session): boolean {
 export function updateSessionSet(
   session: Session,
   position: SessionPosition,
-  updater: (set: SessionSet) => SessionSet
+  updater: (set: SessionSet) => SessionSet,
+  updatedAt: string
 ): Session {
   const blocks = session.blocks.map((block, blockIndex) => {
     if (blockIndex !== position.blockIndex) {
@@ -47,14 +48,14 @@ export function updateSessionSet(
         if (setIndex !== position.setIndex) {
           return set;
         }
-        return updater(set);
+        return { ...updater(set), updatedAt };
       });
-      return { ...exercise, sets };
+      return { ...exercise, sets, updatedAt };
     });
-    return { ...block, exercises };
+    return { ...block, exercises, updatedAt };
   });
 
-  return { ...session, blocks };
+  return { ...session, blocks, updatedAt };
 }
 
 export function getSessionBlock(session: Session, position: SessionPosition): SessionBlock {

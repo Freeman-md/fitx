@@ -1,5 +1,6 @@
 export interface WorkoutPlan {
   id: string;
+  ownerId: string;
   name: string;
   gymType?: string;
   createdAt: string;
@@ -25,6 +26,7 @@ export interface WorkoutDay {
   name: string;
   weekday?: Weekday;
   order: number;
+  updatedAt: string;
   // Days fully own their blocks; there is no cross-plan sharing.
   blocks: Block[];
 }
@@ -34,6 +36,7 @@ export interface Block {
   title: string;
   order: number;
   durationMinutes: number;
+  updatedAt: string;
   // Blocks fully own their exercises; there is no cross-plan sharing.
   exercises: Exercise[];
 }
@@ -48,6 +51,7 @@ export interface Exercise {
   timeSeconds?: number;
   restSeconds: number;
   notes?: string;
+  updatedAt: string;
 }
 
 export const SessionStatus = {
@@ -60,10 +64,12 @@ export type SessionStatus = (typeof SessionStatus)[keyof typeof SessionStatus];
 
 export interface Session {
   id: string;
+  ownerId: string;
   workoutPlanId: string;
   workoutDayId: string;
   startedAt: string;
   endedAt?: string;
+  updatedAt: string;
   // Sessions reference plans/days by ID only and are immutable once completed.
   status: SessionStatus;
   blocks: SessionBlock[];
@@ -73,11 +79,13 @@ export interface SessionBlock {
   blockId: string;
   startedAt: string;
   endedAt?: string;
+  updatedAt: string;
   exercises: SessionExercise[];
 }
 
 export interface SessionExercise {
   exerciseId: string;
+  updatedAt: string;
   sets: SessionSet[];
 }
 
@@ -89,4 +97,5 @@ export interface SessionSet {
   actualTimeSeconds?: number;
   completed: boolean;
   completedAt?: string;
+  updatedAt: string;
 }

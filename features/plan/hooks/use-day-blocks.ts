@@ -4,6 +4,7 @@ import { useFocusEffect } from 'expo-router';
 import type { Block, WorkoutDay, WorkoutPlan } from '@/data/models';
 import { loadWorkoutPlans, saveWorkoutPlans } from '@/data/storage';
 import { getNextOrder, normalizeOrder, sortByOrder } from '@/features/plan/utils/order';
+import { generateId } from '@/lib/id';
 
 type MoveDirection = 'up' | 'down';
 
@@ -48,10 +49,13 @@ export function useDayBlocks(planId: string | undefined, dayId: string | undefin
     if (!currentPlan || !currentDay) {
       return;
     }
+    const updatedAt = new Date().toISOString();
     const nextPlan = {
       ...currentPlan,
-      days: currentPlan.days.map((day) => (day.id === currentDay.id ? updater(day) : day)),
-      updatedAt: new Date().toISOString(),
+      days: currentPlan.days.map((day) =>
+        day.id === currentDay.id ? { ...updater(day), updatedAt } : day
+      ),
+      updatedAt,
     };
     await persistPlan(nextPlan);
   };
@@ -61,11 +65,13 @@ export function useDayBlocks(planId: string | undefined, dayId: string | undefin
       return false;
     }
     const nextOrder = getNextOrder(orderedBlocks);
+    const updatedAt = new Date().toISOString();
     const nextBlock: Block = {
-      id: `block-${Date.now()}`,
+      id: generateId('block'),
       title,
       durationMinutes,
       order: nextOrder,
+      updatedAt,
       exercises: [],
     };
     await updateDay((day) => ({ ...day, blocks: [...day.blocks, nextBlock] }));
@@ -73,10 +79,11 @@ export function useDayBlocks(planId: string | undefined, dayId: string | undefin
   };
 
   const editBlock = async (blockId: string, title: string, durationMinutes: number) => {
+    const updatedAt = new Date().toISOString();
     await updateDay((day) => ({
       ...day,
       blocks: day.blocks.map((block) =>
-        block.id === blockId ? { ...block, title, durationMinutes } : block
+        block.id === blockId ? { ...block, title, durationMinutes, updatedAt } : block
       ),
     }));
   };
@@ -99,7 +106,11 @@ export function useDayBlocks(planId: string | undefined, dayId: string | undefin
       return;
     }
     [blocks[index], blocks[targetIndex]] = [blocks[targetIndex], blocks[index]];
-    const normalizedBlocks = normalizeOrder(blocks);
+    const updatedAt = new Date().toISOString();
+    const normalizedBlocks = normalizeOrder(blocks).map((block) => ({
+      ...block,
+      updatedAt,
+    }));
     await updateDay((day) => ({ ...day, blocks: normalizedBlocks }));
   };
 

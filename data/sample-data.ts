@@ -3,6 +3,7 @@ import type { Session, WorkoutPlan } from './models';
 
 export const workoutPlan: WorkoutPlan = {
   id: 'plan-001',
+  ownerId: 'local-demo',
   name: 'Strength + Conditioning',
   gymType: 'Full Gym',
   createdAt: '2025-02-01T08:00:00.000Z',
@@ -12,12 +13,14 @@ export const workoutPlan: WorkoutPlan = {
       id: 'day-001',
       name: 'Lower Body + Core',
       order: 1,
+      updatedAt: '2025-02-05T08:00:00.000Z',
       blocks: [
         {
           id: 'block-001',
           title: 'Warmup',
           order: 1,
           durationMinutes: 10,
+          updatedAt: '2025-02-05T08:00:00.000Z',
           exercises: [
             {
               id: 'ex-001',
@@ -27,6 +30,7 @@ export const workoutPlan: WorkoutPlan = {
               timeSeconds: 600,
               restSeconds: 0,
               notes: 'Easy pace, nasal breathing.',
+              updatedAt: '2025-02-05T08:00:00.000Z',
             },
           ],
         },
@@ -35,6 +39,7 @@ export const workoutPlan: WorkoutPlan = {
           title: 'Strength',
           order: 2,
           durationMinutes: 35,
+          updatedAt: '2025-02-05T08:00:00.000Z',
           exercises: [
             {
               id: 'ex-002',
@@ -45,6 +50,7 @@ export const workoutPlan: WorkoutPlan = {
               repsMax: 8,
               restSeconds: 150,
               notes: 'Last set AMRAP leaving 1 rep in reserve.',
+              updatedAt: '2025-02-05T08:00:00.000Z',
             },
             {
               id: 'ex-003',
@@ -54,6 +60,7 @@ export const workoutPlan: WorkoutPlan = {
               repsMin: 8,
               repsMax: 10,
               restSeconds: 120,
+              updatedAt: '2025-02-05T08:00:00.000Z',
             },
             {
               id: 'ex-004',
@@ -63,6 +70,7 @@ export const workoutPlan: WorkoutPlan = {
               repsMin: 10,
               repsMax: 12,
               restSeconds: 90,
+              updatedAt: '2025-02-05T08:00:00.000Z',
             },
           ],
         },
@@ -71,6 +79,7 @@ export const workoutPlan: WorkoutPlan = {
           title: 'Core Finisher',
           order: 3,
           durationMinutes: 12,
+          updatedAt: '2025-02-05T08:00:00.000Z',
           exercises: [
             {
               id: 'ex-005',
@@ -79,6 +88,7 @@ export const workoutPlan: WorkoutPlan = {
               order: 1,
               timeSeconds: 45,
               restSeconds: 45,
+              updatedAt: '2025-02-05T08:00:00.000Z',
             },
             {
               id: 'ex-006',
@@ -88,6 +98,7 @@ export const workoutPlan: WorkoutPlan = {
               repsMin: 8,
               repsMax: 12,
               restSeconds: 60,
+              updatedAt: '2025-02-05T08:00:00.000Z',
             },
           ],
         },
@@ -98,18 +109,22 @@ export const workoutPlan: WorkoutPlan = {
 
 export const session: Session = {
   id: 'session-001',
+  ownerId: 'local-demo',
   workoutPlanId: 'plan-001',
   workoutDayId: 'day-001',
   startedAt: '2025-02-10T07:30:00.000Z',
+  updatedAt: '2025-02-10T07:50:00.000Z',
   status: SessionStatus.Active,
   blocks: [
     {
       blockId: 'block-001',
       startedAt: '2025-02-10T07:30:00.000Z',
       endedAt: '2025-02-10T07:40:00.000Z',
+      updatedAt: '2025-02-10T07:40:00.000Z',
       exercises: [
         {
           exerciseId: 'ex-001',
+          updatedAt: '2025-02-10T07:40:00.000Z',
           sets: [
             {
               setNumber: 1,
@@ -117,6 +132,7 @@ export const session: Session = {
               actualTimeSeconds: 600,
               completed: true,
               completedAt: '2025-02-10T07:40:00.000Z',
+              updatedAt: '2025-02-10T07:40:00.000Z',
             },
           ],
         },
@@ -125,9 +141,11 @@ export const session: Session = {
     {
       blockId: 'block-002',
       startedAt: '2025-02-10T07:41:00.000Z',
+      updatedAt: '2025-02-10T07:50:00.000Z',
       exercises: [
         {
           exerciseId: 'ex-002',
+          updatedAt: '2025-02-10T07:50:00.000Z',
           sets: [
             {
               setNumber: 1,
@@ -135,6 +153,7 @@ export const session: Session = {
               actualReps: 6,
               completed: true,
               completedAt: '2025-02-10T07:46:00.000Z',
+              updatedAt: '2025-02-10T07:46:00.000Z',
             },
             {
               setNumber: 2,
@@ -142,36 +161,43 @@ export const session: Session = {
               actualReps: 6,
               completed: true,
               completedAt: '2025-02-10T07:50:00.000Z',
+              updatedAt: '2025-02-10T07:50:00.000Z',
             },
             {
               setNumber: 3,
               targetReps: 6,
               completed: false,
+              updatedAt: '2025-02-10T07:50:00.000Z',
             },
             {
               setNumber: 4,
               targetReps: 6,
               completed: false,
+              updatedAt: '2025-02-10T07:50:00.000Z',
             },
           ],
         },
         {
           exerciseId: 'ex-003',
+          updatedAt: '2025-02-10T07:50:00.000Z',
           sets: [
             {
               setNumber: 1,
               targetReps: 8,
               completed: false,
+              updatedAt: '2025-02-10T07:50:00.000Z',
             },
             {
               setNumber: 2,
               targetReps: 8,
               completed: false,
+              updatedAt: '2025-02-10T07:50:00.000Z',
             },
             {
               setNumber: 3,
               targetReps: 8,
               completed: false,
+              updatedAt: '2025-02-10T07:50:00.000Z',
             },
           ],
         },

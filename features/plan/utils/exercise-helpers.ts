@@ -1,4 +1,5 @@
 import type { Exercise } from '@/data/models';
+import { generateId } from '@/lib/id';
 
 export type ExerciseDraft = {
   name: string;
@@ -30,8 +31,9 @@ const parseOptionalNumber = (value: string): number | undefined => {
 };
 
 export const buildExerciseFromDraft = (draft: ExerciseDraft, order: number): Exercise => {
+  const updatedAt = new Date().toISOString();
   return {
-    id: `exercise-${Date.now()}`,
+    id: generateId('exercise'),
     name: draft.name.trim(),
     order,
     sets: parseOptionalNumber(draft.sets) ?? 0,
@@ -40,6 +42,7 @@ export const buildExerciseFromDraft = (draft: ExerciseDraft, order: number): Exe
     timeSeconds: parseOptionalNumber(draft.timeSeconds),
     restSeconds: parseOptionalNumber(draft.restSeconds) ?? 0,
     notes: draft.notes.trim() || undefined,
+    updatedAt,
   };
 };
 
@@ -56,6 +59,7 @@ export const draftFromExercise = (exercise: Exercise): ExerciseDraft => {
 };
 
 export const applyDraftToExercise = (exercise: Exercise, draft: ExerciseDraft): Exercise => {
+  const updatedAt = new Date().toISOString();
   return {
     ...exercise,
     name: draft.name.trim(),
@@ -65,6 +69,7 @@ export const applyDraftToExercise = (exercise: Exercise, draft: ExerciseDraft): 
     timeSeconds: parseOptionalNumber(draft.timeSeconds),
     restSeconds: parseOptionalNumber(draft.restSeconds) ?? 0,
     notes: draft.notes.trim() || undefined,
+    updatedAt,
   };
 };
 

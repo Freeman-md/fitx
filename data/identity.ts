@@ -1,11 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { generateId } from '@/lib/id';
+
 const LOCAL_USER_ID_KEY = 'fitx:local-user-id';
 const FIREBASE_USER_ID_KEY = 'fitx:firebase-user-id';
 
 const generateLocalUserId = () => {
-  const random = Math.random().toString(36).slice(2, 10);
-  return `local-${Date.now()}-${random}`;
+  return generateId('local');
 };
 
 export async function ensureLocalUserId(): Promise<string> {
@@ -32,4 +33,12 @@ export async function loadFirebaseUserId(): Promise<string | null> {
 
 export async function clearFirebaseUserId(): Promise<void> {
   await AsyncStorage.removeItem(FIREBASE_USER_ID_KEY);
+}
+
+export async function resolveOwnerId(): Promise<string> {
+  const firebaseUserId = await loadFirebaseUserId();
+  if (firebaseUserId) {
+    return firebaseUserId;
+  }
+  return ensureLocalUserId();
 }

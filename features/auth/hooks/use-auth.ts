@@ -75,6 +75,7 @@ export function useAuth() {
       return { ok: true };
     } catch (error: any) {
       const code = error?.code as string | undefined;
+console.log(error)
       if (code === 'auth/user-not-found') {
         return { ok: false, message: 'No account found for this email.', code };
       }
