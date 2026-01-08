@@ -19,7 +19,7 @@ export default function AccountScreen() {
       <AccountView
         firebaseEmail={email}
         isSignedIn={isSignedIn}
-        onSignIn={() => router.push('/auth')}
+        onSignIn={() => router.push('/auth/sign-in')}
         onSignOut={() => void signOutUser()}
       />
     </>

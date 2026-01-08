@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut, type User } from 'firebase/auth';
 
 import { firebaseAuth, hasFirebaseConfig } from '@/lib/firebase';
@@ -75,15 +75,8 @@ export function useAuth() {
       return { ok: true };
     } catch (error: any) {
       const code = error?.code as string | undefined;
-console.log(error)
-      if (code === 'auth/user-not-found') {
-        return { ok: false, message: 'No account found for this email.', code };
-      }
-      if (code === 'auth/invalid-credential') {
+      if (code === 'auth/invalid-credential' || code === 'auth/wrong-password') {
         return { ok: false, message: 'Incorrect email or password.', code };
-      }
-      if (code === 'auth/wrong-password') {
-        return { ok: false, message: 'Incorrect password.', code };
       }
       return { ok: false, message: 'Unable to sign in. Try again.', code };
     }
@@ -99,10 +92,14 @@ console.log(error)
     } catch (error: any) {
       const code = error?.code as string | undefined;
       if (code === 'auth/email-already-in-use') {
-        return { ok: false, message: 'Email already in use.', code };
+        return { ok: false, message: 'Account already exists. Sign in instead.', code };
       }
       if (code === 'auth/weak-password') {
-        return { ok: false, message: 'Password must be at least 6 characters.', code };
+        return {
+          ok: false,
+          message: typeof error?.message === 'string' ? error.message : 'Password is too weak.',
+          code,
+        };
       }
       return { ok: false, message: 'Unable to create account. Try again.', code };
     }

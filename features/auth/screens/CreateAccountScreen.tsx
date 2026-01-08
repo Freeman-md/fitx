@@ -6,9 +6,9 @@ import { useAuth } from '@/features/auth/hooks/use-auth';
 
 const isValidEmail = (value: string) => /\S+@\S+\.\S+/.test(value);
 
-export default function AuthEmailScreen() {
+export default function CreateAccountScreen() {
   const router = useRouter();
-  const { signInWithEmail, hasFirebaseConfig, isSignedIn, isReady } = useAuth();
+  const { createAccountWithEmail, hasFirebaseConfig, isSignedIn, isReady } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailTouched, setEmailTouched] = useState(false);
@@ -34,22 +34,18 @@ export default function AuthEmailScreen() {
     if (!isValid) {
       return;
     }
-
     setErrorMessage('');
-
-    const signInResult = await signInWithEmail(trimmedEmail, password);
-
-    if (signInResult.ok) {
+    const result = await createAccountWithEmail(trimmedEmail, password);
+    if (result.ok) {
       router.replace('/account');
       return;
     }
-
-    setErrorMessage(signInResult.message ?? 'Unable to sign in.');
+    setErrorMessage(result.message ?? 'Unable to create account.');
   };
 
   const helper = !hasFirebaseConfig
     ? 'Firebase is not configured yet. Add your Firebase config to continue.'
-    : 'Enter your email and password to sign in.';
+    : 'Create an account to attach your workouts to an email.';
 
   useEffect(() => {
     if (!isReady || !isSignedIn) {
@@ -62,7 +58,7 @@ export default function AuthEmailScreen() {
     <>
       <Stack.Screen
         options={{
-          title: 'Sign in',
+          title: 'Create account',
           headerBackTitle: 'Back',
         }}
       />
@@ -86,9 +82,9 @@ export default function AuthEmailScreen() {
         emailError={emailError}
         passwordError={passwordError || errorMessage}
         onPrimary={() => void handlePrimary()}
-        onSecondary={() => router.push('/auth/create-account')}
-        primaryLabel="Sign in"
-        secondaryLabel="Create account"
+        onSecondary={() => router.push('/auth/sign-in')}
+        primaryLabel="Create account"
+        secondaryLabel="Sign in instead"
         primaryDisabled={!isValid || !hasFirebaseConfig}
         helper={helper}
       />

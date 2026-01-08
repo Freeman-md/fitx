@@ -49,10 +49,9 @@ export function EmailAuthView({
   const inputStyle = [styles.input, { borderColor, color: textColor }];
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <PageTitle>Sign in</PageTitle>
           {helper ? <SecondaryText style={styles.subtitle}>{helper}</SecondaryText> : null}
         </View>
         <View style={styles.fields}>
