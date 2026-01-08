@@ -39,7 +39,7 @@ const resolveFirebaseConfig = (): FirebaseConfig | null => {
 
 const firebaseConfig = resolveFirebaseConfig();
 
-const firebaseApp = firebaseConfig
+export const firebaseApp = firebaseConfig
   ? getApps().length
     ? getApps()[0]
     : initializeApp(firebaseConfig)
