@@ -2,6 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import type { Session, WorkoutPlan } from '@/data/models';
 import { writePlanSnapshot, writeSessionSummary } from '@/lib/firestore';
+import { loadFirebaseUserId } from '@/data/identity';
+import { loadSessions, loadWorkoutPlans } from '@/data/storage';
 
 const PLAN_MIRROR_STATE_KEY = 'fitx:plan-mirror-state';
 const SESSION_MIRROR_STATE_KEY = 'fitx:session-mirror-state';
@@ -70,6 +72,10 @@ export const markPlanDirty = async (planId: string) => {
 
 export const attemptPlanMirror = async (plan: WorkoutPlan) => {
   try {
+    const firebaseUserId = await loadFirebaseUserId();
+    if (!firebaseUserId) {
+      return false;
+    }
     const state = await loadPlanMirrorState();
     if (!isPlanUploadDue(state, plan.id)) {
       return false;
@@ -94,6 +100,10 @@ export const mirrorCompletedSession = async (session: Session) => {
     return false;
   }
   try {
+    const firebaseUserId = await loadFirebaseUserId();
+    if (!firebaseUserId) {
+      return false;
+    }
     const state = await loadSessionMirrorState();
     if (state[session.id]) {
       return false;
@@ -115,5 +125,21 @@ export const mirrorPendingSessions = async (sessions: Session[]) => {
     if (session.status === 'completed') {
       await mirrorCompletedSession(session);
     }
+  }
+};
+
+export const runMirrorJob = async () => {
+  try {
+    const firebaseUserId = await loadFirebaseUserId();
+    if (!firebaseUserId) {
+      return;
+    }
+    const [plans, sessions] = await Promise.all([loadWorkoutPlans(), loadSessions()]);
+    for (const plan of plans) {
+      await attemptPlanMirror(plan);
+    }
+    await mirrorPendingSessions(sessions);
+  } catch (error) {
+    return;
   }
 };
