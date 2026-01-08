@@ -5,7 +5,7 @@ import { useAuth } from '@/features/auth/hooks/use-auth';
 
 export default function AccountScreen() {
   const router = useRouter();
-  const { localUserId, firebaseUserId, email, isSignedIn, signOutUser } = useAuth();
+  const { email, isSignedIn, signOutUser } = useAuth();
 
   return (
     <>
@@ -17,8 +17,6 @@ export default function AccountScreen() {
         }}
       />
       <AccountView
-        localUserId={localUserId}
-        firebaseUserId={firebaseUserId}
         firebaseEmail={email}
         isSignedIn={isSignedIn}
         onSignIn={() => router.push('/auth')}

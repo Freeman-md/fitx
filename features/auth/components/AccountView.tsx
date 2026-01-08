@@ -6,18 +6,14 @@ import { PageTitle, PrimaryText, SecondaryText } from '@/components/ui/text';
 import { Spacing } from '@/components/ui/spacing';
 
 type AccountViewProps = {
-  localUserId: string | null;
   firebaseEmail: string | null;
-  firebaseUserId: string | null;
   isSignedIn: boolean;
   onSignIn: () => void;
   onSignOut: () => void;
 };
 
 export function AccountView({
-  localUserId,
   firebaseEmail,
-  firebaseUserId,
   isSignedIn,
   onSignIn,
   onSignOut,
@@ -32,16 +28,11 @@ export function AccountView({
           </SecondaryText>
         </View>
         <View style={styles.section}>
-          <SecondaryText>Local user</SecondaryText>
-          <PrimaryText>{localUserId ?? 'Loading...'}</PrimaryText>
-        </View>
-        <View style={styles.section}>
-          <SecondaryText>Signed in email</SecondaryText>
-          <PrimaryText>{firebaseEmail ?? 'Not signed in'}</PrimaryText>
-        </View>
-        <View style={styles.section}>
-          <SecondaryText>Firebase user ID</SecondaryText>
-          <PrimaryText>{firebaseUserId ?? '—'}</PrimaryText>
+          <SecondaryText>Status</SecondaryText>
+          <PrimaryText>{isSignedIn ? 'Signed in' : 'Not signed in'}</PrimaryText>
+          {firebaseEmail ? (
+            <SecondaryText style={styles.emailText}>{firebaseEmail}</SecondaryText>
+          ) : null}
         </View>
         <View style={styles.actions}>
           {isSignedIn ? (
@@ -72,6 +63,9 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: Spacing.xs,
+  },
+  emailText: {
+    fontSize: 13,
   },
   actions: {
     marginTop: 'auto',
